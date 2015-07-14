@@ -1,9 +1,12 @@
-Package: sigmoidr
+Package: sctools
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Tools for distribution fitting and synthetic generation of single-cell RNA-seq data.
 Version: 0.1
 Date: 2015-07-06
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
+Authors@R: person("Kieran", "Campbell", email = "kieran.campbell@sjc.ox.ac.uk", role = c("aut", "cre"))
 Description: More about what it does (maybe more than one line)
 License: What license is it under?
 LazyData: TRUE
+Imports:
+  MASS
+  scater

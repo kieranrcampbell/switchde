@@ -1,2 +1,2 @@
-# sigmoidr
-Sigmoidal DE of scRNA-seq across pseudotime
+# sctools
+Tools for distribution fitting and synthetic generation of single-cell RNA-seq data.
