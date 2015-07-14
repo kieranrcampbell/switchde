@@ -74,8 +74,13 @@ fit_alt_model <- function(x, t) {
                method = 'L-BFGS-B',
                lower = lower,
                x = x, t = t, control = control)
+
   if(opt$convergence == 0) {
-    return(opt)
+    res <- list()
+    res$par <- opt$par
+    names(res$par) <- c('L','k','t0','sig_sq')
+    res$log_lik <- -opt$value
+    return(res)
   } else {
     warning('Optim failed to converge')
     return( NA )

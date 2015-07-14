@@ -1,9 +1,10 @@
 library(devtools)
-source('~/oxford/switch/sigmoidr/R/switch.R')
+load_all('~/oxford/switch/sigmoidr')
 library(gridExtra)
 library(cowplot)
 library(dplyr)
 library(embeddr)
+library(MASS)
 
 # let’s try on some monocle data ------------------------------------------
 
@@ -41,7 +42,7 @@ plot_grid(plotlist = plots, labels = mrf_genes)
 
 
 load("~/oxford/embeddr/data/sce_pst.Rdata")
-fpkm(sce_23_kept) <- 10^(exprs(sce_23_kept) - 1)
+#fpkm(sce_23_kept) <- 10^(exprs(sce_23_kept) - 1)
 X <- exprs(sce_23_kept)
 pt <- pseudotime(sce_23_kept)
 
@@ -53,8 +54,22 @@ df_pval$qval <- p.adjust(df_pval$pval, method = 'BH')
 
 is_de <- df_pval$qval < 0.01
 
-pst_models <- apply(fpkm(sce_23_kept[is_de,]), 1, fitModel, t = pseudotime(sce_23_kept), dist = 'nb')
+pst_models <- apply(counts(sce_23_kept[is_de,]), 1, fitModel, t = pseudotime(sce_23_kept), dist = 'nb')
 pst_hypers <- fitPstModelHypers(pst_models)
 
-null_models <- apply(fpkm(sce_23_kept[!is_de,]), 1, fitModel, dist = 'nb', sigmoidal = FALSE)
+null_models <- apply(counts(sce_23_kept[!is_de,]), 1, fitModel, dist = 'nb', sigmoidal = FALSE)
 null_hypers <- fitNullModelHypers(null_models)
+
+n_pst_cells <- 200
+n_null_cells <- 200
+pst <- runif(n_pst_cells)
+X <- simulateCells(ngenes = 200, hypers = pst_hypers, 
+                   pst = pst, dropout = FALSE)
+
+sg <- newSCESet(tpmData = t(X))
+pData(sg)$pst <- pst
+sg <- embeddr(sg, nn = 4)
+plot_embedding(sg, color_by = 'pst')
+cor(redDim(sg)[,1], pst)
+sg <- fit_pseudotime(sg)
+

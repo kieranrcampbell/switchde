@@ -239,17 +239,17 @@ plot_null_model <- function(params, x, t) {
 # mrf_indices <- match(mrf_long_genes, featureNames(cds))
 # mrf_expr <- exprs(cds)[mrf_indices,]
 #
-pst <- cds$Pseudotime
-y <- log2(mrf_expr[1,] + 1)
-qplot(pst, y)
-EM <- EM_ctrl(y, pst, loglik_tol = 1e-7)
-plot_model(EM$par, y[s], pst[s])
-
-Null_EM <- Null_EM_ctrl(y)
-plot_null_model(Null_EM$par, y, pst)
-
-D <- 2*(Null_EM$loglik - EM$loglik)
-pchisq(D, 2, lower.tail = F)
+# pst <- cds$Pseudotime
+# y <- log2(mrf_expr[1,] + 1)
+# qplot(pst, y)
+# EM <- EM_ctrl(y, pst, loglik_tol = 1e-7)
+# plot_model(EM$par, y[s], pst[s])
+# 
+# Null_EM <- Null_EM_ctrl(y)
+# plot_null_model(Null_EM$par, y, pst)
+# 
+# D <- 2*(Null_EM$loglik - EM$loglik)
+# pchisq(D, 2, lower.tail = F)
 
 # qplot(pst, EM$x)
 #
@@ -267,10 +267,10 @@ pchisq(D, 2, lower.tail = F)
 # do.call(grid.arrange, plots)
 #
 # # bootstrap k -------------------------------------------------------------
-df <- data.frame(y = log2(mrf_expr[1,] + 1), pst <- cds$Pseudotime)
-stat_wrapper <- function(data, indices)  {
-  df <- data[indices,]
-  EM_ctrl(df$y, df$pst)$par[2]
-}
-bt <- jackknife(df, stat_wrapper, 500)
-
+# df <- data.frame(y = log2(mrf_expr[1,] + 1), pst <- cds$Pseudotime)
+# stat_wrapper <- function(data, indices)  {
+#   df <- data[indices,]
+#   EM_ctrl(df$y, df$pst)$par[2]
+# }
+# bt <- jackknife(df, stat_wrapper, 500)
+# 

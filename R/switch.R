@@ -215,7 +215,7 @@ fitPstModelHypers <- function(model_list, trim = 0.05) {
   return(list(L = L_fit$estimate,
               k = k_fit,
               t0 = t0_fit,
-              r_fit = r_fit$estimate))
+              r = r_fit$estimate))
 }
 
 fitNullModelHypers <- function(model_list, trim = 0.05) {

@@ -262,26 +262,26 @@ plot_joint_models <- function(params, Y, t) {
 # mrf_indices <- match(mrf_long_genes, featureNames(cds))
 # mrf_expr <- exprs(cds)[mrf_indices,]
 #
-library(reshape2)
-pst <- cds$Pseudotime
-rownames(mrf_expr) <- mrf_genes
-y <- log2(mrf_expr[1,] + 1)
-qplot(pst, y)
-
-EM <- EM_ctrl(log2(mrf_expr + 1), pst, loglik_tol = 1e-7)
-plot_joint_models(EM$par, log2(mrf_expr + 1), pst)
-
-load("~/delete_me.Rdata")
-
-sce_sample <- sce_23_kept[sample(nrow(sce_23_kept), size=100),]
-Z <- exprs(sce_sample) * log2(10)
-EM_sce <- EM_ctrl(Z, pseudotime(sce_sample), maxit = 200)
-plot_joint_models(EM_sce$par, Z, pseudotime(sce_sample))
-
-sce_mrf <- sce_23_kept[mrf_long_genes,]
-Z <- exprs(sce_mrf) * log2(10)
-EM_sce <- EM_ctrl(Z, pseudotime(sce_sample), maxit = 2000)
-plot_joint_models(EM_sce$par, Z, pseudotime(sce_sample))
+# library(reshape2)
+# pst <- cds$Pseudotime
+# rownames(mrf_expr) <- mrf_genes
+# y <- log2(mrf_expr[1,] + 1)
+# qplot(pst, y)
+# 
+# EM <- EM_ctrl(log2(mrf_expr + 1), pst, loglik_tol = 1e-7)
+# plot_joint_models(EM$par, log2(mrf_expr + 1), pst)
+# 
+# load("~/delete_me.Rdata")
+# 
+# sce_sample <- sce_23_kept[sample(nrow(sce_23_kept), size=100),]
+# Z <- exprs(sce_sample) * log2(10)
+# EM_sce <- EM_ctrl(Z, pseudotime(sce_sample), maxit = 200)
+# plot_joint_models(EM_sce$par, Z, pseudotime(sce_sample))
+# 
+# sce_mrf <- sce_23_kept[mrf_long_genes,]
+# Z <- exprs(sce_mrf) * log2(10)
+# EM_sce <- EM_ctrl(Z, pseudotime(sce_sample), maxit = 2000)
+# plot_joint_models(EM_sce$par, Z, pseudotime(sce_sample))
 
 #plot_model(EM$par, y[s], pst[s])
 #
