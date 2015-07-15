@@ -21,7 +21,19 @@ generate_pst_cells <- function(ngenes, hypers, pst, dropout = TRUE, rate = NULL,
 }
 
 generate_null_cells <- function(ngenes, ncells, hypers, dropout = TRUE, rate = NULL, base = 10) {
-
+  mu <- rgamma(ngenes, shape = hypers$mu[1], rate = hypers$mu[2])
+  r <- rgamma(ngenes, shape = hypers$r[1], rate = hypers$r[2])
+  X <- sapply(1:ngenes, function(i) {
+    y <- rnbinom(ncells, mu = mu[i], size = r[i])
+    if(dropout) {
+      x <- log(mus[,i] + 1, base = base)
+      p_dropout <- exp(-rate * x * x)
+      is_amplified <- sapply(p_dropout, function(p) sample(c(0,1), size = 1, prob = c(p, 1-p)))
+      y <- y * is_amplified
+    }
+    y
+  })
+  return( X )
 }
 
 #' Simulate single-cell RNA-seq data
@@ -35,10 +47,10 @@ simulateCells <- function(ngenes, hypers, pst = NULL,
   if(!is.null(pst)) {
     X <- generate_pst_cells(ngenes, hypers, pst, dropout, rate)
   } else {
-    X <-  generate_pst_cells(ngenes, ncells, hypers, dropout, rate)
+    X <-  generate_null_cells(ngenes, ncells, hypers, dropout, rate)
   }
   if(is.null(ncells)) ncells <- length(pst)
   colnames(X) <- paste0('gene', 1:ngenes)
   rownames(X) <- paste0('cell', 1:ncells)
-  return(X)
+  return(t(X))
 }

@@ -63,13 +63,13 @@ null_hypers <- fitNullModelHypers(null_models)
 n_pst_cells <- 200
 n_null_cells <- 200
 pst <- runif(n_pst_cells)
-X <- simulateCells(ngenes = 200, hypers = pst_hypers, 
+X <- simulateCells(ngenes = 200, hypers = pst_hypers,
                    pst = pst, dropout = FALSE)
 
-sg <- newSCESet(tpmData = t(X))
-pData(sg)$pst <- pst
-sg <- embeddr(sg, nn = 4)
-plot_embedding(sg, color_by = 'pst')
-cor(redDim(sg)[,1], pst)
-sg <- fit_pseudotime(sg)
+# sg <- newSCESet(tpmData = t(X))
+# pData(sg)$pst <- pst
+# sg <- embeddr(sg, nn = 4)
+# plot_embedding(sg, color_by = 'pst')
+# cor(redDim(sg)[,1], pst)
+# sg <- fit_pseudotime(sg)
 
