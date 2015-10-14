@@ -159,6 +159,30 @@ norm_diff_expr_test <- function(x, t) {
   names(r) <- c('pval', 'L', 'k', 't0', 'sig_sq')
   return( r )
 }
+
+#' Plot a sigmoidal pseudotime model
+#' 
+#' @param alt_model The model returned by norm_fit_alt_model
+#' @param x Gene expression vector x
+#' @param t Pseudotime vector t
+#' 
+#' @export
+#' 
+#' @return A ggplot object plotting both gene expression and predicted
+#' gene expression (e.g. the mean) over pseudotime
+norm_plot_model <- function(alt_model, x, t) {
+  mu_func <- function(t, params) {
+    L <- params[1] ; k <- params[2] ; t_0 <- params[3] ; r <- params[4]
+    L / (1 + exp(-k*(t - t_0)))
+  }
+  df <- data.frame(y=x, t=t)
+  ggplot(df) + geom_point(aes(x=t, y=y), alpha=.8) +
+    theme_bw() +
+    stat_function(fun = mu_func, args = list(alt_model$par), color='red') +
+    xlab('Pseudotime') + ylab('Expression')
+}
+
+
 # 
 # simulate_de <- function(alt_model, n = 100) {
 #   params <- alt_model$par
@@ -177,17 +201,7 @@ norm_diff_expr_test <- function(x, t) {
 #   return(data.frame(t=t, mu=mu))
 # }
 
-norm_plot_model <- function(alt_model, x, t) {
-  mu_func <- function(t, params) {
-    L <- params[1] ; k <- params[2] ; t_0 <- params[3] ; r <- params[4]
-    L / (1 + exp(-k*(t - t_0)))
-  }
-  df <- data.frame(y=x, t=t)
-  ggplot(df) + geom_point(aes(x=t, y=y), alpha=.8) +
-    theme_bw() +
-    stat_function(fun = mu_func, args = list(alt_model$par), color='red') +
-    xlab('Pseudotime') + ylab('Expression')
-}
+
 
 # testing -----------------------------------------------------------------
 
