@@ -1,2 +1,2 @@
 # sctools
-Tools for distribution fitting and synthetic generation of single-cell RNA-seq data.
+Inference of switch-like behaviour of genes over pseudotime.
