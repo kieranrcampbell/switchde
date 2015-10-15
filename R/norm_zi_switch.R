@@ -2,31 +2,7 @@
 # differential expression for single-cell RNA-seq data
 # kieran.campbell@sjc.ox.ac.uk
 
-
-# differential expression EM ----------------------------------------------
-
-calc_mu <- function(params, t) {
-  L <- params[1] ; k <- params[2] ; t_0 <- params[3]
-  mu <- L / (1 + exp(-k*(t - t_0)))
-  return( mu )
-}
-
-log_norm_likelihood <- function(x, mu, sig_sq) {
-  N <- length(x)
-  log_lik <- -N / 2 * log(2 * sig_sq)
-  log_lik <- log_lik - sum( 1/(2 * sig_sq) * (x - mu)^2 )
-  log_lik <- log_lik - N / 2 * log(2 * pi)
-  return(log_lik)
-}
-
-#' Objective function given differential expression
-alt_obj_func <- function(params, x, t) {
-  mu <- calc_mu(params, t)
-  sig_sq <- params[4]
-  return( -log_norm_likelihood(x, mu, sig_sq) )
-}
-
-Q <- function(params, x, t, is_zero) {
+norm_zi_Q <- function(params, x, t, is_zero) {
   par <- params[1:4] ; lambda <- params[5]
   lQ <- alt_obj_func(params, x, t)
   lQ <- lQ + sum(lambda * x[is_zero]^2)
@@ -35,7 +11,7 @@ Q <- function(params, x, t, is_zero) {
 }
 
 #' Return the gradient of Q = E[l_c]
-Q_grad <- function(params, x, t, is_zero) {
+norm_zi_Q_grad <- function(params, x, t, is_zero) {
   L <- params[1] ; k <- params[2] ; t_0 <- params[3]
   sig_sq <- params[4] ; lambda <- params[5]
 
@@ -68,28 +44,18 @@ Q_grad <- function(params, x, t, is_zero) {
   return(grad)
 }
 
-test_Q_grad <- function() {
-  t <- t0 <- 1
-  x <- 1 ; L <- 2
-  sig_sq <- 1 ; k <- 0 ; lambda <- 1
-  params <- c(L, k, t0, sig_sq, lambda)
-  is_zero <- F
-  fdHess(params, Q, x = x, t = t, is_zero = is_zero)$gradient
-  Q_grad(params, x = x, t = t, is_zero = is_zero)
-}
 
-E_step <- function(params, t) {
+alt_E_step <- function(params, t) {
   lambda <- params[5]
   par <- params[1:4]
   mu <- calc_mu(par, t)
   return( mu / (1 + 2 * par[4] * lambda) )
 }
 
-M_step <- function(params, x, t, is_zero) {
-  control = list(maxit = 10000) #, pgtol = 1e-6)
+alt_M_step <- function(params, x, t, is_zero, control = list(maxit = 1e6)) {
   ## impose upper bound on t_0
   t_0_max <- 20 * log(10) / params[2]
-   opt <- optim(params, fn = Q, gr = Q_grad,
+   opt <- optim(params, fn = norm_zi_Q, gr = norm_zi_Q_grad,
               method = "L-BFGS-B",
               lower = c(0, -Inf, -Inf, 1e-5, 1e-5),
               #upper = c(Inf, Inf, t_0_max, Inf, Inf),
@@ -98,7 +64,14 @@ M_step <- function(params, x, t, is_zero) {
   opt
 }
 
-EM_ctrl <- function(y, t, loglik_tol = 1e-6, maxit = 100) {
+#' Runs the EM algorithm for zero inflated model
+#' 
+#' @param y Gene expression vector
+#' @param t Pseudotime vector
+#' 
+#' @export
+#' @return List with parameters, latent values and log likelihood
+alt_EM_ctrl <- function(y, t, maxit = 500, loglik_tol = 1e-7) {
   ## initialisation
   L <- mean(y) ; t_0 <- median(t) ; sig_sq <- var(y)
   k <- coef(lm(y ~ t))[2]
@@ -108,15 +81,17 @@ EM_ctrl <- function(y, t, loglik_tol = 1e-6, maxit = 100) {
   loglik <- 10^8
   x_latent <- NULL
 
+
   for(i in 1:maxit) {
     ## E step
     x <- y
     is_zero <- y == 0
-    x[is_zero] <- E_step(params, t)[is_zero]
+    x[is_zero] <- alt_E_step(params, t)[is_zero]
     x_latent <- x
 
     ## M step
-    opt <- M_step(params, x, t, is_zero)
+    opt <- alt_M_step(params, x, t, is_zero)
+    
     if(opt$convergence == 0) {
       params <- opt$par
     } else {
@@ -127,6 +102,7 @@ EM_ctrl <- function(y, t, loglik_tol = 1e-6, maxit = 100) {
     if(delta_loglik < 0) stop("negative log likelihood increased - something isn't right")
     if(delta_loglik < loglik_tol) {
       names(params) <- c('L','k','t_0','sig_sq','lambda')
+      message(paste("EM converged after ", i, " iterations"))
       return(list(par = params, x = x_latent, loglik = opt$value))
     } else {
       loglik <- opt$value
@@ -140,7 +116,7 @@ EM_ctrl <- function(y, t, loglik_tol = 1e-6, maxit = 100) {
 
 # null model EM -----------------------------------------------------------
 
-Null_EM_ctrl <- function(y,loglik_tol = 1e-6, maxit = 100) {
+Null_EM_ctrl <- function(y, loglik_tol = 1e-6, maxit = 100) {
   ## initialisation
   mu <- mean(y) ; sig_sq <- var(y)
   lambda <- 0.1
@@ -209,7 +185,15 @@ Null_log_lik <- function(params, x, is_zero) {
   return(-log_lik)
 }
 
-plot_model <- function(params, x, t) {
+
+# Plotting ----------------------------------------------------------------
+
+#' Plot zero inflated sigmoidal model
+#' 
+#' @param params Parameters returned by \code{EMCtrl}
+#' @param x Gene expression vector
+#' @param t Pseudotime vector
+norm_zi_plot_model <- function(params, x, t) {
   mu_func <- function(t, params) {
     L <- params[1] ; k <- params[2] ; t_0 <- params[3] ; r <- params[4]
     L / (1 + exp(-k*(t - t_0)))
@@ -229,6 +213,21 @@ plot_null_model <- function(params, x, t) {
     geom_line(aes(x=t, y=mu), color='red') +
     xlab('Pseudotime') + ylab('Expression')
 }
+
+
+# Testing -----------------------------------------------------------------
+
+
+test_Q_grad <- function() {
+  t <- t0 <- 1
+  x <- 1 ; L <- 2
+  sig_sq <- 1 ; k <- 0 ; lambda <- 1
+  params <- c(L, k, t0, sig_sq, lambda)
+  is_zero <- F
+  fdHess(params, Q, x = x, t = t, is_zero = is_zero)$gradient
+  Q_grad(params, x = x, t = t, is_zero = is_zero)
+}
+
 
 # library(monocle)
 # data(HSMM)

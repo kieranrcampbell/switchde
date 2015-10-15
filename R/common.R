@@ -17,3 +17,26 @@ calc_mu <- function(params, t) {
   mu <- L / (1 + exp(-k*(t - t_0)))
   return(mu)
 }
+
+
+
+#' Log-likelihood of iid measurements from a normal distribution
+#' 
+#' @param x A vector of measurements
+#' @param mu A scalar mean
+#' @param sig_sq a scalar variance
+#' 
+#' @return The log likelihood x given mu, sig_sq
+log_norm_likelihood <- function(x, mu, sig_sq) {
+  sum(dnorm(x, mu, sqrt(sig_sq), log = TRUE))
+}
+
+
+
+#' Negative log likelihood of the sigmoidal differential expression
+#' function given some expression vector x
+norm_alt_obj_func <- function(params, x, t) {
+  sig_sq <- params[4]
+  mu <- calc_mu(params, t)
+  return( -log_norm_likelihood(x, mu, sig_sq) )
+}

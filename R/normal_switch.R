@@ -10,17 +10,6 @@
 # kieran.campbell@sjc.ox.ac.uk
 
 
-#' Log-likelihood of iid measurements from a normal distribution
-#' 
-#' @param x A vector of measurements
-#' @param mu A scalar mean
-#' @param sig_sq a scalar variance
-#' 
-#' @return The log likelihood x given mu, sig_sq
-log_norm_likelihood <- function(x, mu, sig_sq) {
-  sum(dnorm(x, mu, sqrt(sig_sq), log = TRUE))
-}
-
 #' Computations the gradient of the log-likelihood of the model
 #' for params, expression vector x and pseudotime t
 norm_Q_grad <- function(params, x, t) {
@@ -53,13 +42,6 @@ norm_Q_grad <- function(params, x, t) {
 }
 
 
-#' Negative log likelihood of the sigmoidal differential expression
-#' function given some expression vector x
-norm_alt_obj_func <- function(params, x, t) {
-  sig_sq <- params[4]
-  mu <- calc_mu(params, t)
-  return( -log_norm_likelihood(x, mu, sig_sq) )
-}
 
 #' Fit the sigmoidal expression model for some expression vector 
 #' x, pseudotime t, and control parameters to be passed to optim
