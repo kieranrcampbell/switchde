@@ -68,10 +68,11 @@ alt_M_step <- function(params, x, t, is_zero, control = list(maxit = 1e6)) {
 #' 
 #' @param y Gene expression vector
 #' @param t Pseudotime vector
+#' @param verbose Print out EM progress
 #' 
 #' @export
 #' @return List with parameters, latent values and log likelihood
-alt_EM_ctrl <- function(y, t, maxit = 500, loglik_tol = 1e-7) {
+alt_EM_ctrl <- function(y, t, maxit = 500, loglik_tol = 1e-7, verbose = FALSE) {
   ## initialisation
   L <- mean(y) ; t_0 <- median(t) ; sig_sq <- var(y)
   k <- coef(lm(y ~ t))[2]
@@ -101,8 +102,8 @@ alt_EM_ctrl <- function(y, t, maxit = 500, loglik_tol = 1e-7) {
     delta_loglik <- loglik - opt$value
     if(delta_loglik < 0) stop("negative log likelihood increased - something isn't right")
     if(delta_loglik < loglik_tol) {
+      if(verbose) message(paste("EM converged after ", i, " iterations"))
       names(params) <- c('L','k','t_0','sig_sq','lambda')
-      message(paste("EM converged after ", i, " iterations"))
       return(list(par = params, x = x_latent, loglik = opt$value))
     } else {
       loglik <- opt$value
@@ -116,7 +117,7 @@ alt_EM_ctrl <- function(y, t, maxit = 500, loglik_tol = 1e-7) {
 
 # null model EM -----------------------------------------------------------
 
-Null_EM_ctrl <- function(y, loglik_tol = 1e-6, maxit = 100) {
+Null_EM_ctrl <- function(y, loglik_tol = 1e-6, maxit = 100, verbose = FALSE) {
   ## initialisation
   mu <- mean(y) ; sig_sq <- var(y)
   lambda <- 0.1
@@ -136,11 +137,10 @@ Null_EM_ctrl <- function(y, loglik_tol = 1e-6, maxit = 100) {
     params <- Null_M_step(params, x, is_zero)
 
     new_loglik <- Null_log_lik(params, x, is_zero)
-    #print(paste("New negative log likelihoo:", new_loglik))
-    #print(params)
     delta_loglik <- loglik - new_loglik
     #if(delta_loglik < 0) stop("negative log likelihood increased - something isn't right")
     if(abs(delta_loglik) < loglik_tol) {
+      if(verbose) message(paste("EM converged after ", i, " iterations"))
       names(params) <- c('mu','sig_sq','lambda')
       return(list(par = params, x = x_latent, loglik = new_loglik))
     } else {
@@ -185,6 +185,66 @@ Null_log_lik <- function(params, x, is_zero) {
   return(-log_lik)
 }
 
+norm_zi_fit_models <- function(x, t, ...) {
+  alt_model <- alt_EM_ctrl(x, t, ...)
+  null_model <- Null_EM_ctrl(x, ...)
+  
+  return(list(alt_model = alt_model, null_model = null_model))
+}
+
+#' Sigmoidal differential expression test including zero-inflation
+#' 
+#' Returns the p-value and model for sigmoidal differential expression. 
+#' Non-zero-inflated and Gaussian likelihood
+#' 
+#' @param x Gene expression vector
+#' @param t Pseudotime vector
+#' 
+#' @export
+#' @return A vector of length 5 with entries:
+#' \itemize{
+#' \item P-value
+#' \item MLE estimate for L = 2 mu_0 parameter
+#' \item MLE estimate for k
+#' \item MLE estimate for t_0
+#' \item MLE estimate for sigma^2
+#' }
+norm_zi_diff_expr_test <- function(x, t, ...) {
+  models <- norm_zi_fit_models(x, t, ...)
+  pval <- norm_zi_lrtest(x, t, models)
+
+  params <- models$alt_model$par
+  if(length(params) < 5) params <- rep(NA, 5)
+  
+  r <- c(pval, params)
+  names(r) <- c('pval', 'L', 'k', 't0', 'sig_sq', 'lambda')
+  return( r )
+}
+
+#' Likelihood ratio test for zero-inflated sigmoidal differential expression
+#' 
+#' @param x Gene expression vector
+#' @param t Pseudotime vector
+#' @param models List of length two, with the first entry corresponding
+#' to the sigmoidal model and the latter to the null model. The model should
+#' be of the form of those returned by norm_fit_alt_model and norm_fit_null_model
+#' 
+#' @export
+#' @return A P-value given by the likelihood ratio test
+norm_zi_lrtest <- function(x, t, models) {
+  ## first alternative model
+  if(length(models$alt_model) < 2) {
+    if(is.na(models$alt_model)) return(-1)
+  }
+  if(length(models$null_model) < 2) {
+    if(is.na(models$null_model)) return(-2)
+  }
+  alt_neg_log_lik <- models$alt_model$loglik
+  null_neg_log_lik <- models$null_model$loglik
+  D <- 2 * (null_neg_log_lik - alt_neg_log_lik)
+  dof <- 2 # 4 - 2
+  return( pchisq(D, dof, lower.tail = FALSE) )
+}
 
 # Plotting ----------------------------------------------------------------
 

@@ -6,7 +6,7 @@
 #' This function (common to all models) calculates the sigmoidal mean vector
 #' given the parameters and factor of pseudotimes
 #' 
-#' @param params Vector of length 4 with entries L = 2\mu_0, k, t0, sig_sq
+#' @param params Vector of length 4 with entries L = 2mu_0, k, t0, sig_sq
 #' @param t Vector of pseudotimes
 #' 
 #' @return Mean sigmoidal vector

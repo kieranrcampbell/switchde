@@ -70,7 +70,7 @@ norm_fit_alt_model <- function(x, t, control = list(maxit = 100000)) {
   }
 }
 
-#' Fit's the null model (simply by taking the mean and 
+#' Fits the null model (simply by taking the mean and 
 #' variance of the expression vector x) and returns a list
 #' with the parameters as first entry and negative log likelihood
 #' as second.
@@ -83,10 +83,12 @@ norm_fit_null_model <- function(x) {
 #' Fits both sigmoidal and null models, returning them as a list
 norm_fit_models <- function(x, t) {
   alt_model <- norm_fit_alt_model(x, t)
-  if(!is.list(alt_model) && !is.na(alt_model)) {
-    print(alt_model)
-    print(class(alt_model))
-    stop("alt_model neither list nor NA")
+  if(!is.list(alt_model)) {
+    if(!is.na(alt_model)) { # this has to go on a separate line because of how comparisons are done
+      print(alt_model)
+      print(class(alt_model))
+      stop("alt_model neither list nor NA")
+    }
   }
   null_model <- norm_fit_null_model(x)
   return(list(alt_model = alt_model, null_model = null_model))
@@ -104,8 +106,14 @@ norm_fit_models <- function(x, t) {
 #' @return A P-value given by the likelihood ratio test
 norm_lrtest <- function(x, t, models) {
   ## first alternative model
-  if(is.na(models$alt_model)) return(-1)
-  if(is.na(models$null_model)) return(-2)
+  if(length(models$alt_model) < 2) {
+    print(models$alt_model)
+    if(is.na(models$alt_model)) return(-1)
+  }
+  if(length(models$null_model) < 2) {
+    if(is.na(models$null_model)) return(-2)
+  }
+  
   alt_neg_log_lik <- models$alt_model$value
   null_neg_log_lik <- models$null_model$value
   D <- 2 * (null_neg_log_lik - alt_neg_log_lik)
@@ -132,11 +140,9 @@ norm_lrtest <- function(x, t, models) {
 #' }
 norm_diff_expr_test <- function(x, t) {
   models <- norm_fit_models(x, t)
-  pval <- lrtest(x, t, models)
-  params <- rep(NA, 4)
-  if(!is.na(models$alt_model)) {
-    params <- models$alt_model$par
-  }
+  pval <- norm_lrtest(x, t, models)
+  params <- models$alt_model$par
+  if(length(params) < 4) params <- rep(NA, 4)
   r <- c(pval, params)
   names(r) <- c('pval', 'L', 'k', 't0', 'sig_sq')
   return( r )
