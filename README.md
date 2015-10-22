@@ -1,6 +1,4 @@
----
-output: pdf_document
----
+
 # sctools
 Sctools provides distribution fitting for sigmoidal differential gene expression across pseudotime. It supports zero-inflation similar to that found in Pearson & Yau (Genome Biology, 2015), implemented through the EM algorithm.
 
