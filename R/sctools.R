@@ -3,11 +3,47 @@
 # 
 # kieran.campbell@sjc.ox.ac.uk
 
-#' Returns a set of fitted sigmoidal pseudotime models
+#' Fit sigmoidal pseudotime model for set of genes
 #' 
+#'  @param object Gene expression data that is either
+#'  \itemize{
+#'  \item A vector of length number of cells for a single gene
+#'  \item A matrix of dimension number of genes x number of cells
+#'  \item An object of class \code{SCESet} from package scater
+#'  }
+#'  @param pseudotime A pseudotime vector with a pseudotime corresponding to 
+#'  every cell. Can be \code{NULL} if object is of class \code{SCESet} and 
+#'  \code{pData(sce)$pseudotime} is defined.
+#'  @param zero_inflated Logical. Should zero inflation be implemented? Default  \code{FALSE}
+#'  @param ... Additional arguments to be passed to expectation maximisation algorithm
+#'  if zero-inflation is enabled:
+#'  \itemize{
+#'  \item maxit Maximum number of iterations for EM. Default 500
+#'  \item loglik_tol Change in log-likelihood tolerance. Default 1e-7 
+#'  \item verbose Should progress of EM optimisation be printed? Default \code{FALSE}
+#'  }
+#'  
 #' @export
-fitModel <- function(object, ...) {
+#' 
+#' @return A matrix where columns are genes and rows are model parameters (zero inflation will
+#' have an extra lambda parameter compared to no zero-inflation)
+fitModel <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
+  res <- NULL
+  inputs <- sanitise_inputs(object, pseudotime)
+  X <- inputs$X
+  pst <- inputs$pst
   
+  if(zero_inflated) {
+    res <- apply(X, 1, function(x, pst, ...) {
+      alt_EM_ctrl(x, pst, ...)$par
+      }, pst, ...)
+  } else {
+    res <- apply(X, 1, function(x, pst) {
+      norm_fit_alt_model(x, pst)$par
+      }, pst)
+  }
+  
+  return( res )
 }
 
 #' Tests differential expression for one or more genes
@@ -35,7 +71,24 @@ fitModel <- function(object, ...) {
 #' @return A matrix where each column corresponds to a gene, the first row is
 #' the p-value for that gene and subsequent rows are model parameters.
 testDE <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
-  X <- pst <- res <- NULL
+  res <- NULL
+  inputs <- sanitise_inputs(object, pseudotime)
+  X <- inputs$X
+  pst <- inputs$pst
+  
+  ## differential gene test time
+  if(zero_inflated) {
+    res <- apply(X, 1, sctools::norm_zi_diff_expr_test, pst, ...)
+  } else {
+    res <- apply(X, 1, sctools::norm_diff_expr_test, pst)
+  }
+  
+  return( res )
+}
+
+#' Sanitise inputs for testDE and fitModel
+sanitise_inputs <- function(object, pseudotime) {
+  X <- pst <- NULL
   
   if(is.vector(object) && is.numeric(object)) { # single gene expression vector
     message(paste("Assuming single gene measured in", length(object)), "cells")
@@ -61,16 +114,7 @@ testDE <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
   if(is.null(pst)) stop("Pseudotime must either be specified or in pData(object)")
   if(length(pst) != ncol(X)) stop("Must have pseudotime for each cell")
   
-  ## differential gene test time
-  if(zero_inflated) {
-    res <- apply(X, 1, sctools::norm_zi_diff_expr_test, pst, ...)
-  } else {
-    res <- apply(X, 1, sctools::norm_diff_expr_test, pst)
-  }
-  
-  return( res )
+  return( list(X = X, pst = pst) )
 }
-
-
 
 

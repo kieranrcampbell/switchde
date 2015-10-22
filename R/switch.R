@@ -103,30 +103,30 @@ fit_null_model <- function(x, obj_func, dist = c('nb','normal')) {
   }
 }
 
-#' Fit pseudotime model
-#'
-#' @export
-fitModel <- function(x, t = NULL, dist = c('nb', 'normal'), sigmoidal = TRUE) {
-  dist <- match.arg(dist)
-  if(sigmoidal & is.null(t)) stop('Provide non-null t for pseudotime model fitting')
-  model <- NULL
-  if(dist == 'nb') {
-    if(sigmoidal) {
-      model <- fit_alt_model(x, t, obj_func = nb_alt_obj_func, dist = dist)
-    } else {
-      model <- fit_null_model(x, obj_func = nb_null_obj_func, dist = dist)
-    }
-  } else if(dist == "normal") {
-    if(sigmoidal) {
-      model <- fit_alt_model(x, t, obj_func = norm_alt_obj_func, dist = dist)
-    } else {
-      model <- fit_null_model(x, obj_func = norm_null_obj_func, dist = dist)
-    }
-  }
-  model$type <- ifelse(sigmoidal, "sigmoid", "flat")
-  model$dist <- dist
-  return(model)
-}
+# #' Fit pseudotime model
+# #'
+# #' @export
+# fitModel <- function(x, t = NULL, dist = c('nb', 'normal'), sigmoidal = TRUE) {
+#   dist <- match.arg(dist)
+#   if(sigmoidal & is.null(t)) stop('Provide non-null t for pseudotime model fitting')
+#   model <- NULL
+#   if(dist == 'nb') {
+#     if(sigmoidal) {
+#       model <- fit_alt_model(x, t, obj_func = nb_alt_obj_func, dist = dist)
+#     } else {
+#       model <- fit_null_model(x, obj_func = nb_null_obj_func, dist = dist)
+#     }
+#   } else if(dist == "normal") {
+#     if(sigmoidal) {
+#       model <- fit_alt_model(x, t, obj_func = norm_alt_obj_func, dist = dist)
+#     } else {
+#       model <- fit_null_model(x, obj_func = norm_null_obj_func, dist = dist)
+#     }
+#   }
+#   model$type <- ifelse(sigmoidal, "sigmoid", "flat")
+#   model$dist <- dist
+#   return(model)
+# }
 
 
 lrtest <- function(x, t, pst_model, null_model) {
