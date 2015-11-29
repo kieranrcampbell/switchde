@@ -78,9 +78,9 @@ testDE <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
   
   ## differential gene test time
   if(zero_inflated) {
-    res <- apply(X, 1, sctools::norm_zi_diff_expr_test, pst, ...)
+    res <- apply(X, 1, norm_zi_diff_expr_test, pst, ...)
   } else {
-    res <- apply(X, 1, sctools::norm_diff_expr_test, pst)
+    res <- apply(X, 1, norm_diff_expr_test, pst)
   }
   
   return( res )

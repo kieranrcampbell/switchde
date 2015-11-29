@@ -1,11 +1,11 @@
-Package: sctools
+Package: switchde
 Type: Package
-Title: Tools for distribution fitting and synthetic generation of single-cell RNA-seq data.
+Title: Inference of switch-like behaviour in genes across pseudotime in scRNA-seq data
 Version: 0.1
 Date: 2015-07-06
 Authors@R: person("Kieran", "Campbell", email = "kieran.campbell@sjc.ox.ac.uk", role = c("aut", "cre"))
 Description: More about what it does (maybe more than one line)
-License: What license is it under?
+License: MIT
 LazyData: TRUE
 Imports:
   MASS,

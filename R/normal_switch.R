@@ -141,8 +141,9 @@ norm_lrtest <- function(x, t, models) {
 norm_diff_expr_test <- function(x, t) {
   models <- norm_fit_models(x, t)
   pval <- norm_lrtest(x, t, models)
-  params <- models$alt_model$par
-  if(length(params) < 4) params <- rep(NA, 4)
+  params <- rep(NA, 4)
+  if(!is.na(models$alt_model))
+    if(length(models$alt_model$par == 4)) params <- models$alt_model$par
   r <- c(pval, params)
   names(r) <- c('pval', 'L', 'k', 't0', 'sig_sq')
   return( r )
