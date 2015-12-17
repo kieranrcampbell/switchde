@@ -46,6 +46,8 @@ norm_Q_grad <- function(params, x, t) {
 #' Fit the sigmoidal expression model for some expression vector 
 #' x, pseudotime t, and control parameters to be passed to optim
 #' This function returns NA if optim fails to converge.
+#' 
+#' @export
 norm_fit_alt_model <- function(x, t, control = list(maxit = 100000)) {
   L <- mean(x) ; t0 <- median(t) ; sig_sq <- var(x)
   k <- coef(lm(x ~ t))[2]
@@ -138,6 +140,8 @@ norm_lrtest <- function(x, t, models) {
 #' \item MLE estimate for t_0
 #' \item MLE estimate for sigma^2
 #' }
+#' 
+#' @export
 norm_diff_expr_test <- function(x, t) {
   models <- norm_fit_models(x, t)
   pval <- norm_lrtest(x, t, models)
