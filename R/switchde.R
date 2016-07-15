@@ -178,3 +178,48 @@ sanitise_inputs <- function(object, pseudotime) {
 }
 
 
+#' Example sigmoid plot
+#' 
+#' Mainly for documentation
+#' 
+#' @import ggplot2
+#' @importFrom RColorBrewer brewer.pal
+#' @export
+example_sigmoid <- function() {
+  
+  theme_set(theme_bw())
+  
+  f <- function(x, k, mu0, t0) {
+    2 * mu0 / (1 + exp(-k * (x - t0)))
+  }
+  
+  g <- function(x, m, C) {
+    m * x + C
+  }
+  
+  k <- 20
+  mu0 <- 1
+  t0 <- 0.5
+  
+  cols = brewer.pal(3, "Set1")
+  
+  plt <- ggplot(data.frame(x = c(0,1)), aes(x = x)) +
+    theme_bw() + 
+    xlab("Pseudotime")
+  
+  plt <- plt + geom_hline(yintercept = mu0, colour = cols[2], linetype = 1, alpha = 0.8, size = 1.5) +
+    geom_vline(xintercept = 0.5, colour = cols[3], linetype = 1, size = 1.5, alpha = 0.8) +
+    stat_function(fun = g, args = list(C  = -3.5, m = 9), 
+                  linetype = 1, alpha = 0.8, colour = cols[1], size = 1.5)
+  
+  plt <- plt + geom_text(label = "mu[0]", x = 0.25, y = 1.3, parse = TRUE,
+                         size = 8, colour = cols[2]) +
+    geom_text(label = "t[0]", x = 0.55, y = 0, parse = TRUE,
+              size = 8, colour = cols[3]) +
+    geom_text(label = "k", x = 0.55, y = 2, size = 8, colour = cols[1])
+  
+  plt <- plt + stat_function(fun = f, args = list(k = k, mu0 = mu0, t0 = t0), size = 1.5, alpha = 0.7) +
+    ylim(-0.5,2.5) + ylab("Gene expression")
+
+  return(plt)
+}

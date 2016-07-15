@@ -10,6 +10,20 @@ Inference of switch-like differential expression along single-cell trajectories
 devtools::install_github("kieranrcampbell/switchde")
 ```
 
+## Introduction
+
+`switchde` is an `R` package for detecting switch-like differential expression along single-cell RNA-seq trajectories. It assumes genes follow a sigmoidal pattern of gene expression and tests for differential expression using a likelihood ratio test. It also returns maximum likelihood estimates (MLE) for the sigmoid parameters, which allows filtering of genes for up or down regulation as well as where along the trajectory the regulation occurs.
+
+The parametric form of gene expression assumed is sigmoidal:
+
+<img src="inst/example_sigmoid.png" width="300"/>
+
+Governed by three parameters:
+
+* $\mu_0$ The half-peak expression
+* $k$ The 'activation strength'. If positive, the gene is upregulated along the trajectory; if negative, the gene is downregulated. The magnitude of $k$ corresponds to how fast the gene is up or down regulated.
+* $t_0$ The 'activation time', or where in the trajectory this behaviour occurs. Note this parameter should be interpreted with respect to the overall range of the pseudotimes supplied.
+
 ## Usage
 
 `switchde` accepts either an `SCESet` from [Scater](http://www.github.com/davismcc/scater) or a matrix of gene expression measurents. These should ideally be in `log(TPM + 1)` form, but any logged non-negative expression measurements will work.

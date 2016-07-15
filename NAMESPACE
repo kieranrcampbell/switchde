@@ -2,6 +2,7 @@
 
 export(alt_EM_ctrl)
 export(calc_mu)
+export(example_sigmoid)
 export(extract_pars)
 export(fitModel)
 export(norm_diff_expr_test)
@@ -18,4 +19,5 @@ export(testDE)
 import(dplyr)
 import(ggplot2)
 importFrom(MASS,fitdistr)
+importFrom(RColorBrewer,brewer.pal)
 importFrom(dplyr,filter)

@@ -5,46 +5,93 @@ author: "Kieran Campbell"
 date: "`r Sys.Date()`"
 output: 
   BiocStyle::html_document 
+references:
+- id: trapnell
+  title: The dynamics and regulators of cell fate decisions are revealed by pseudotemporal ordering of single cells.
+  author:
+  - family: Trapnell
+    given: Cole
+  container-title:  Nature biotechnology
+  publisher: Nature Publishing Group
+  type: article-journal
+  issued:
+    year: 2014
 ---
-  
-# Introduction
 
-`switchde` is an `R` package for...
-
-# Example on real dataset
-
-```{r load-data, cache = FALSE, message = FALSE, warning = FALSE}
-library(DT)
+```{r load-data, cache = FALSE, message = FALSE, warning = FALSE, include = FALSE}
 library(dplyr)
 library(monocle)
-library(HSMMSingleCell)
-data(HSMM)
+knitr::opts_chunk$set( cache = TRUE )
 devtools::load_all("~/oxford/switch/switchde/") ## REMOVE WHEN COMPLETED
 ```
 
-Subset genes:
+  
+# Introduction
+
+`switchde` is an `R` package for detecting switch-like differential expression along single-cell RNA-seq trajectories. It assumes genes follow a sigmoidal pattern of gene expression and tests for differential expression using a likelihood ratio test. It also returns maximum likelihood estimates (MLE) for the sigmoid parameters, which allows filtering of genes for up or down regulation as well as where along the trajectory the regulation occurs.
+
+The parametric form of gene expression assumed is a sigmoid:
+
+```{r sigmoid-plot, fig.width = 4, fig.height = 3, warning = FALSE}
+example_sigmoid()
+```
+
+Governed by three parameters:
+
+* $\mu_0$ The half-peak expression
+* $k$ The 'activation strength'. If positive, the gene is upregulated along the trajectory; if negative, the gene is downregulated. The magnitude of $k$ corresponds to how fast the gene is up or down regulated.
+* $t_0$ The 'activation time', or where in the trajectory this behaviour occurs. Note this parameter should be interpreted with respect to the overall range of the pseudotimes supplied.
+
+
+
+# Example on real dataset
+
+We provide a brief example on the single-cell RNA-seq dataset of differentiating myoblasts from  [@trapnell]. This data is stored in `HSMM` in the Bioconductor package `HSMMSingleCell`. 
+
+
+
+We first subset down to only genes expressed in at least 10% of cells, then from that set down to a further 5000 for computational convenience. We then transform the data to `log2(FPKM + 1)`.
 
 ```{r subset-genes}
-HSMM <- HSMM[rowSums(exprs(HSMM)) > 0, ]
-HSMM <- HSMM[sample(seq_len(nrow(HSMM)), 5000), ]
+set.seed(123L)
+library(HSMMSingleCell)
+data(HSMM)
+HSMM <- HSMM[rowMeans(exprs(HSMM) > 0) > 0.1, ] # gene expressed in 10% of cells
+HSMM <- HSMM[sample(seq_len(nrow(HSMM)), 1000), ] # sample down to 5000 for computational convenience
 
 x <- log2(exprs(HSMM) + 1)
-pst <- HSMM$Pseudotime
+pseudotime <- HSMM$Pseudotime
 ```
 
 ```{r test-de}
-sde <- switchde(x, pst)
+sde <- switchde(x, pseudotime)
+
 ```
 
 We can then view the results, ordered by p-value:
 
 ```{r view-results}
-datatable(arrange(sde, qval))
+arrange(sde, qval)
 ```
+
+```{r plot, fig.width = 5, fig.height = 3}
+gene <- sde$gene[which.min(sde$qval)]
+pars <- extract_pars(sde, gene)
+print(pars)
+
+#          mu0            k           t0 
+# 104.86694912  -0.06151712 -68.87160316 
+
+switchplot(x[gene, ], HSMM$Pseudotime, pars)
+
+```
+
 
 # Technical info
 
 ```{r session-info}
 sessionInfo()
 ```
+
+# References
 

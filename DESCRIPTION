@@ -17,6 +17,7 @@ Suggests:
     rmarkdown,
     BiocStyle,
     testthat,
-    numDeriv
+    numDeriv,
+    brewer.pal
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1

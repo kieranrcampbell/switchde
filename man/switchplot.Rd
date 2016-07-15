@@ -4,14 +4,14 @@
 \alias{switchplot}
 \title{Plot gene behaviour}
 \usage{
-switchplot(x, pst, pars)
+switchplot(x, pseudotime, pars)
 }
 \arguments{
 \item{x}{Gene expression vector}
 
-\item{pst}{Pseudotime vector (of same length as x)}
-
 \item{pars}{Fitted model parameters}
+
+\item{pst}{Pseudotime vector (of same length as x)}
 }
 \value{
 A \code{ggplot2} plot of gene expression and MLE sigmoid
