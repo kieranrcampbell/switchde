@@ -20,9 +20,9 @@ The parametric form of gene expression assumed is sigmoidal:
 
 Governed by three parameters:
 
-* $\mu_0$ The half-peak expression
-* $k$ The 'activation strength'. If positive, the gene is upregulated along the trajectory; if negative, the gene is downregulated. The magnitude of $k$ corresponds to how fast the gene is up or down regulated.
-* $t_0$ The 'activation time', or where in the trajectory this behaviour occurs. Note this parameter should be interpreted with respect to the overall range of the pseudotimes supplied.
+* `mu_0` The half-peak expression
+* `k` The 'activation strength'. If positive, the gene is upregulated along the trajectory; if negative, the gene is downregulated. The magnitude of `k` corresponds to how fast the gene is up or down regulated.
+* `t_0` The 'activation time', or where in the trajectory this behaviour occurs. Note this parameter should be interpreted with respect to the overall range of the pseudotimes supplied.
 
 ## Usage
 
@@ -90,6 +90,7 @@ switchplot(exprs(sce)[gene, ], pseudotime, pars)
 ## Authors
 
 Kieran Campbell & Christopher Yau
+
 Wellcome Trust Centre for Human Genetics, University of Oxford
 
 
