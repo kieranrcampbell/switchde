@@ -49,7 +49,7 @@ norm_Q_grad <- function(params, x, t) {
 #' 
 #' @export
 norm_fit_alt_model <- function(x, t, control = list(maxit = 100000)) {
-  L <- mean(x) ; t0 <- median(t) ; sig_sq <- var(x)
+  L <- 2 * mean(x) ; t0 <- median(t) ; sig_sq <- var(x)
   k <- coef(lm(x ~ t))[2]
   params <- c(L, k, t0, sig_sq)
   lower <- c(0, -Inf, -Inf, 1e-6)
@@ -62,7 +62,8 @@ norm_fit_alt_model <- function(x, t, control = list(maxit = 100000)) {
   if(opt$convergence == 0) {
     res <- list()
     res$par <- opt$par
-    names(res$par) <- c('L','k','t0','sig_sq')
+    res$par[1] <- res$par[1] / 2
+    names(res$par) <- c('mu0','k','t0','sig_sq')
     res$log_lik <- -opt$value
     res$value <- opt$value
     return(res)
@@ -77,9 +78,11 @@ norm_fit_alt_model <- function(x, t, control = list(maxit = 100000)) {
 #' with the parameters as first entry and negative log likelihood
 #' as second.
 norm_fit_null_model <- function(x) {
-  mu <- mean(x) ; r <- var(x)
-  neg_log_lik <- -log_norm_likelihood(x, mu, r)
-  return(list(par = c(mu, r), value = neg_log_lik))
+  mu <- mean(x) ; sig2 <- var(x)
+  neg_log_lik <- -log_norm_likelihood(x, mu, sig2)
+  par <- c(mu, sig2)
+  names(par) <- c("mu", "sig2")
+  return(list(par = par, log_lik = -neg_log_lik, value = neg_log_lik))
 }
 
 #' Fits both sigmoidal and null models, returning them as a list
@@ -146,10 +149,11 @@ norm_diff_expr_test <- function(x, t) {
   models <- norm_fit_models(x, t)
   pval <- norm_lrtest(x, t, models)
   params <- rep(NA, 4)
-  if(!is.na(models$alt_model))
-    if(length(models$alt_model$par == 4)) params <- models$alt_model$par
+  
+  if(length(models$alt_model$par == 4)) params <- models$alt_model$par
+  
   r <- c(pval, params)
-  names(r) <- c('pval', 'L', 'k', 't0', 'sig_sq')
+  names(r) <- c('pval', 'mu0', 'k', 't0', 'sig_sq')
   return( r )
 }
 
@@ -174,36 +178,5 @@ norm_plot_model <- function(alt_model, x, t) {
     stat_function(fun = mu_func, args = list(alt_model$par), color='red') +
     xlab('Pseudotime') + ylab('Expression')
 }
-
-
-# 
-# simulate_de <- function(alt_model, n = 100) {
-#   params <- alt_model$par
-#   L <- params[1] ; k <- params[2] ; t_0 <- params[3] ; r <- params[4]
-#   t <- runif(n)
-#   mu <- L / (1 + exp(-k*(t - t_0)))
-#   y <- rnbinom(n, r, mu = mu)
-#   return(data.frame(t=t, x=y))
-# # }
-# 
-# simulate_mean <- function(alt_model, n=100) {
-#   params <- alt_model$par
-#   L <- params[1] ; k <- params[2] ; t_0 <- params[3] ; r <- params[4]
-#   t <- runif(n)
-#   mu <- L / (1 + exp(-k*(t - t_0)))
-#   return(data.frame(t=t, mu=mu))
-# }
-
-
-
-# testing -----------------------------------------------------------------
-
-test_Q_grad <- function() {
-  params <- c(L, k, t_0, sig_sq)
-  aof <- function(params, X, t) norm_alt_obj_func(params, x, t)
-  grad(aof, x = params, X = X, t = t)
-  norm_Q_grad(params, x = x, t = t)
-}
-
 
 

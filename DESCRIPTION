@@ -1,6 +1,7 @@
 Package: switchde
 Type: Package
-Title: Inference of switch-like behaviour in genes across pseudotime in scRNA-seq data
+Title: Inference of switch-like behaviour in genes across pseudotime in scRNA-
+    seq data
 Version: 0.1
 Date: 2015-07-06
 Authors@R: person("Kieran", "Campbell", email = "kieran.campbell@sjc.ox.ac.uk", role = c("aut", "cre"))
@@ -8,5 +9,14 @@ Description: More about what it does (maybe more than one line)
 License: MIT
 LazyData: TRUE
 Imports:
-  MASS,
-  scater
+    MASS,
+    scater,
+    dplyr
+Suggests:
+    knitr,
+    rmarkdown,
+    BiocStyle,
+    testthat,
+    numDeriv
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1

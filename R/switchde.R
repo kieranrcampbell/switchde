@@ -25,6 +25,8 @@
 #'  
 #' @export
 #' 
+#' @import dplyr
+#' 
 #' @return A matrix where columns are genes and rows are model parameters (zero inflation will
 #' have an extra lambda parameter compared to no zero-inflation)
 fitModel <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
@@ -46,21 +48,21 @@ fitModel <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
   return( res )
 }
 
-#' Tests differential expression for one or more genes
+#' Switch-like differential expression test
 #'  
-#'  @param object Gene expression data that is either
-#'  \itemize{
+#' @param object Gene expression data that is either
+#' \itemize{
 #'  \item A vector of length number of cells for a single gene
 #'  \item A matrix of dimension number of genes x number of cells
 #'  \item An object of class \code{SCESet} from package scater
 #'  }
-#'  @param pseudotime A pseudotime vector with a pseudotime corresponding to 
-#'  every cell. Can be \code{NULL} if object is of class \code{SCESet} and 
-#'  \code{pData(sce)$pseudotime} is defined.
-#'  @param zero_inflated Logical. Should zero inflation be implemented? Default  \code{FALSE}
-#'  @param ... Additional arguments to be passed to expectation maximisation algorithm
-#'  if zero-inflation is enabled:
-#'  \itemize{
+#' @param pseudotime A pseudotime vector with a pseudotime corresponding to 
+#' every cell. Can be \code{NULL} if object is of class \code{SCESet} and 
+#' \code{pData(sce)$pseudotime} is defined.
+#' @param zero_inflated Logical. Should zero inflation be implemented? Default  \code{FALSE}
+#' @param ... Additional arguments to be passed to expectation maximisation algorithm
+#' if zero-inflation is enabled:
+#' \itemize{
 #'  \item maxit Maximum number of iterations for EM. Default 500
 #'  \item loglik_tol Change in log-likelihood tolerance. Default 1e-7 
 #'  \item verbose Should progress of EM optimisation be printed? Default \code{FALSE}
@@ -70,7 +72,7 @@ fitModel <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
 #' 
 #' @return A matrix where each column corresponds to a gene, the first row is
 #' the p-value for that gene and subsequent rows are model parameters.
-testDE <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
+switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
   res <- NULL
   inputs <- sanitise_inputs(object, pseudotime)
   X <- inputs$X
@@ -83,7 +85,65 @@ testDE <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
     res <- apply(X, 1, norm_diff_expr_test, pst)
   }
   
+  res <- tbl_df(t(res))
+  
+  if(!is.null(rownames(X))) res <- mutate(res, gene = rownames(X))
+  
+  res <- mutate(res, qval = p.adjust(pval, method = "BH"))
+  res <- select(res, gene, pval, qval, mu0, k, t0)
+  
   return( res )
+}
+
+#' Extract parameters from fitted model
+#' 
+#' Extract maximum likelihood parameter estimates from a call to \code{switchde}.
+#' 
+#' @param sde The \code{data.frame} returned by \code{switchde}
+#' @param gene The gene for which to extract parameters
+#' @return A vector of length 3 corresonding to the parameters \eqn{\mu_0}, \eqn{k} and \eqn{t_0}
+#' 
+#' @importFrom dplyr filter
+#' 
+#' @export
+extract_pars <- function(sde, gene) {
+  stopifnot(gene %in% sde$gene)
+  g <- gene
+  sde_gene <- filter(sde, gene == g) 
+  return( unlist(sde_gene[,4:6]) )
+}
+
+#' Plot gene behaviour
+#' 
+#' Plot gene behaviour and MLE sigmoid as a function of pseudotime.
+#' 
+#' @param x Gene expression vector
+#' @param pst Pseudotime vector (of same length as x)
+#' @param pars Fitted model parameters
+#' 
+#' @details This plots expression of a single gene. Fitted model parameters can
+#' either be specified manually or can be extracted from the \code{data.frame} returned
+#' by \code{switchde} using the function \code{extract_pars}.
+#' 
+#' @import ggplot2
+#' @export
+#' 
+#' @return A \code{ggplot2} plot of gene expression and MLE sigmoid
+switchplot <- function(x, pseudotime, pars) {
+  ggplot(data_frame(Expression = x, Pseudotime = pseudotime), aes(x = Pseudotime, y = Expression)) +
+    geom_point(alpha = 0.5, fill = "grey", colour = "black", shape = 21) + theme_bw() +
+    stat_function(fun = sigmoid, args = list(params = pars), color = 'red')
+}
+
+#' Backwards compatibility.
+#' 
+#' This function as been replaced by \code{switchde}.
+#' 
+#' @param ... Arguments passed to \code{switchde}.
+#' 
+#' @export
+testDE <- function(...) {
+  switchde(...)
 }
 
 #' Sanitise inputs for testDE and fitModel

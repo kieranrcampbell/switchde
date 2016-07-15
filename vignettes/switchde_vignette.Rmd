@@ -1,0 +1,50 @@
+
+---
+title: "switchde: inference of switch-like gene behaviour along single-cell trajectories"
+author: "Kieran Campbell"
+date: "`r Sys.Date()`"
+output: 
+  BiocStyle::html_document 
+---
+  
+# Introduction
+
+`switchde` is an `R` package for...
+
+# Example on real dataset
+
+```{r load-data, cache = FALSE, message = FALSE, warning = FALSE}
+library(DT)
+library(dplyr)
+library(monocle)
+library(HSMMSingleCell)
+data(HSMM)
+devtools::load_all("~/oxford/switch/switchde/") ## REMOVE WHEN COMPLETED
+```
+
+Subset genes:
+
+```{r subset-genes}
+HSMM <- HSMM[rowSums(exprs(HSMM)) > 0, ]
+HSMM <- HSMM[sample(seq_len(nrow(HSMM)), 5000), ]
+
+x <- log2(exprs(HSMM) + 1)
+pst <- HSMM$Pseudotime
+```
+
+```{r test-de}
+sde <- switchde(x, pst)
+```
+
+We can then view the results, ordered by p-value:
+
+```{r view-results}
+datatable(arrange(sde, qval))
+```
+
+# Technical info
+
+```{r session-info}
+sessionInfo()
+```
+

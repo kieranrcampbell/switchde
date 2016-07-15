@@ -6,7 +6,7 @@
 #' This function (common to all models) calculates the sigmoidal mean vector
 #' given the parameters and factor of pseudotimes
 #' 
-#' @param params Vector of length 4 with entries L = 2mu_0, k, t0, sig_sq
+#' @param params Vector of length 3 with entries L = 2mu_0, k, t0
 #' @param t Vector of pseudotimes
 #' 
 #' @return Mean sigmoidal vector
@@ -15,6 +15,24 @@
 calc_mu <- function(params, t) {
   L <- params[1] ; k <- params[2] ; t_0 <- params[3]
   mu <- L / (1 + exp(-k*(t - t_0)))
+  return(mu)
+}
+
+
+#' Calculate the mean vector given parameters and pseudotimes (mu0 formulation)
+#' 
+#' This function (common to all models) calculates the sigmoidal mean vector
+#' given the parameters and factor of pseudotimes
+#' 
+#' @param params Vector of length 3 with entries mu_0, k, t0
+#' @param t Vector of pseudotimes
+#' 
+#' @return Mean sigmoidal vector
+#' 
+#' @export
+sigmoid <- function(t, params) {
+  mu0 <- params[1] ; k <- params[2] ; t_0 <- params[3]
+  mu <- 2 * mu0 / (1 + exp(-k*(t - t_0)))
   return(mu)
 }
 
