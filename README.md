@@ -68,9 +68,9 @@ with columns:
 * `gene` The gene name, taken from either `featureNames(sce)` or `rowNames(X)`
 * `pval` The p-value associated with differential expression
 * `qval` The Benjamini-Hochberg corrected q-value associated with differential expression
-* `mu0` The MLE estimate of $\mu_0$
-* `k` The MLE estimate of $k$
-* `t0` The MLE estimate of $t_0$
+* `mu0` The MLE estimate of `mu_0`
+* `k` The MLE estimate of `k`
+* `t0` The MLE estimate of `t_0`
 
 We can also extract the parameters and plot the results:
 

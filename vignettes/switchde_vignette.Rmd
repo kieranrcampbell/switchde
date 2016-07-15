@@ -63,28 +63,44 @@ x <- log2(exprs(HSMM) + 1)
 pseudotime <- HSMM$Pseudotime
 ```
 
+Model fitting and differential expression testing is provided by a call to the `switchde` function.
+
 ```{r test-de}
 sde <- switchde(x, pseudotime)
-
 ```
 
-We can then view the results, ordered by p-value:
+This returns a `data.frame` with 6 columns:
+
+* `gene` The gene name, taken from either `featureNames(sce)` or `rowNames(X)`
+* `pval` The p-value associated with differential expression
+* `qval` The Benjamini-Hochberg corrected q-value associated with differential expression
+* `mu0` The MLE estimate of $\mu_0$
+* `k` The MLE estimate of $k$
+* `t0` The MLE estimate of $t_0$
+
+We can use the function `arrange` from `dplyr` to order this by q-value:
 
 ```{r view-results}
 arrange(sde, qval)
 ```
+
+We may then wish to plot the expression of a particular gene and the MLE model. This is acheived using the `switchplot` function, which takes three arguments:
+
+* `x` Vector of expression values
+* `pseudotime` Pseudotime vector of the same length as `x`
+* `pars` The (`mu_0`, `k`, `t0`) parameter tuple
+
+We can easily extract the parameters using the `extract_pars` function and pass this to `switchplot`:
 
 ```{r plot, fig.width = 5, fig.height = 3}
 gene <- sde$gene[which.min(sde$qval)]
 pars <- extract_pars(sde, gene)
 print(pars)
 
-#          mu0            k           t0 
-# 104.86694912  -0.06151712 -68.87160316 
-
 switchplot(x[gene, ], HSMM$Pseudotime, pars)
-
 ```
+
+Note that `switchplot` returns a `ggplot` which can be further customised (e.g. using `theme_xxx()`, etc).
 
 
 # Technical info
