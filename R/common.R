@@ -10,8 +10,6 @@
 #' @param t Vector of pseudotimes
 #' 
 #' @return Mean sigmoidal vector
-#' 
-#' @export
 calc_mu <- function(params, t) {
   L <- params[1] ; k <- params[2] ; t_0 <- params[3]
   mu <- L / (1 + exp(-k*(t - t_0)))
@@ -28,8 +26,6 @@ calc_mu <- function(params, t) {
 #' @param t Vector of pseudotimes
 #' 
 #' @return Mean sigmoidal vector
-#' 
-#' @export
 sigmoid <- function(t, params) {
   mu0 <- params[1] ; k <- params[2] ; t_0 <- params[3]
   mu <- 2 * mu0 / (1 + exp(-k*(t - t_0)))

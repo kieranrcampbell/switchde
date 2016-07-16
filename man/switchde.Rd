@@ -35,4 +35,9 @@ the p-value for that gene and subsequent rows are model parameters.
 \description{
 Switch-like differential expression test
 }
+\examples{
+data(example_gex)
+data(example_pseudotime)
+sde <- switchde(example_gex, example_pseudotime)
+}
 

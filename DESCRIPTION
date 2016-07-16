@@ -11,13 +11,13 @@ LazyData: TRUE
 Imports:
     MASS,
     scater,
-    dplyr
+    dplyr,
+    ggplot2
 Suggests:
     knitr,
     rmarkdown,
     BiocStyle,
     testthat,
-    numDeriv,
-    brewer.pal
+    numDeriv
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1

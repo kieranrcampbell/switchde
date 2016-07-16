@@ -72,6 +72,11 @@ fitModel <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
 #' 
 #' @return A matrix where each column corresponds to a gene, the first row is
 #' the p-value for that gene and subsequent rows are model parameters.
+#' 
+#' @examples
+#' data(example_gex)
+#' data(example_pseudotime)
+#' sde <- switchde(example_gex, example_pseudotime)
 switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
   res <- NULL
   inputs <- sanitise_inputs(object, pseudotime)
@@ -87,7 +92,11 @@ switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
   
   res <- tbl_df(t(res))
   
-  if(!is.null(rownames(X))) res <- mutate(res, gene = rownames(X))
+  if(!is.null(rownames(X))) {
+    res <- mutate(res, gene = rownames(X))
+  } else {
+    res <- mutate(res, gene = paste0("gene", 1:nrow(res)))
+  }
   
   res <- mutate(res, qval = p.adjust(pval, method = "BH"))
   res <- select(res, gene, pval, qval, mu0, k, t0)
@@ -106,6 +115,11 @@ switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
 #' @importFrom dplyr filter
 #' 
 #' @export
+#' @examples
+#' data(example_gex)
+#' data(example_pseudotime)
+#' sde <- switchde(example_gex, example_pseudotime)
+#' pars <- extract_pars(sde, "gene1")
 extract_pars <- function(sde, gene) {
   stopifnot(gene %in% sde$gene)
   g <- gene
@@ -118,7 +132,7 @@ extract_pars <- function(sde, gene) {
 #' Plot gene behaviour and MLE sigmoid as a function of pseudotime.
 #' 
 #' @param x Gene expression vector
-#' @param pst Pseudotime vector (of same length as x)
+#' @param pseudotime Pseudotime vector (of same length as x)
 #' @param pars Fitted model parameters
 #' 
 #' @details This plots expression of a single gene. Fitted model parameters can
@@ -129,6 +143,12 @@ extract_pars <- function(sde, gene) {
 #' @export
 #' 
 #' @return A \code{ggplot2} plot of gene expression and MLE sigmoid
+#' 
+#' @examples
+#' data(example_gex)
+#' data(example_pseudotime)
+#' sde <- switchde(example_gex, example_pseudotime)
+#' switchplot(example_gex[1, ], example_pseudotime, extract_pars(sde, "gene1"))
 switchplot <- function(x, pseudotime, pars) {
   ggplot(data_frame(Expression = x, Pseudotime = pseudotime), aes(x = Pseudotime, y = Expression)) +
     geom_point(alpha = 0.5, fill = "grey", colour = "black", shape = 21) + theme_bw() +
@@ -180,11 +200,13 @@ sanitise_inputs <- function(object, pseudotime) {
 
 #' Example sigmoid plot
 #' 
-#' Mainly for documentation
+#' Plot an example sigmoid function. For demonstration and documentation.
+#' 
 #' 
 #' @import ggplot2
-#' @importFrom RColorBrewer brewer.pal
 #' @export
+#' @examples
+#' example_sigmoid()
 example_sigmoid <- function() {
   
   theme_set(theme_bw())
@@ -201,7 +223,7 @@ example_sigmoid <- function() {
   mu0 <- 1
   t0 <- 0.5
   
-  cols = brewer.pal(3, "Set1")
+  cols = c("#E41A1C", "#377EB8", "#4DAF4A")
   
   plt <- ggplot(data.frame(x = c(0,1)), aes(x = x)) +
     theme_bw() + 

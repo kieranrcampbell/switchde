@@ -9,9 +9,9 @@ switchplot(x, pseudotime, pars)
 \arguments{
 \item{x}{Gene expression vector}
 
-\item{pars}{Fitted model parameters}
+\item{pseudotime}{Pseudotime vector (of same length as x)}
 
-\item{pst}{Pseudotime vector (of same length as x)}
+\item{pars}{Fitted model parameters}
 }
 \value{
 A \code{ggplot2} plot of gene expression and MLE sigmoid
@@ -23,5 +23,11 @@ Plot gene behaviour and MLE sigmoid as a function of pseudotime.
 This plots expression of a single gene. Fitted model parameters can
 either be specified manually or can be extracted from the \code{data.frame} returned
 by \code{switchde} using the function \code{extract_pars}.
+}
+\examples{
+data(example_gex)
+data(example_pseudotime)
+sde <- switchde(example_gex, example_pseudotime)
+switchplot(example_gex[1, ], example_pseudotime, extract_pars(sde, "gene1"))
 }
 

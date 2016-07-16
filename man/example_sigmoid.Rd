@@ -7,6 +7,9 @@
 example_sigmoid()
 }
 \description{
-Mainly for documentation
+Plot an example sigmoid function. For demonstration and documentation.
+}
+\examples{
+example_sigmoid()
 }
 
