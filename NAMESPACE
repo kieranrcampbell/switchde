@@ -2,11 +2,8 @@
 
 export(example_sigmoid)
 export(extract_pars)
-export(fitModel)
 export(switchde)
 export(switchplot)
-export(testDE)
-import(dplyr)
 import(ggplot2)
+importFrom(Biobase,exprs)
 importFrom(dplyr,filter)
-importFrom(scater,exprs)

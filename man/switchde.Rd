@@ -2,7 +2,7 @@
 % Please edit documentation in R/switchde.R
 \name{switchde}
 \alias{switchde}
-\title{Switch-like differential expression test}
+\title{Switch-like model fitting and differential expression test}
 \usage{
 switchde(object, pseudotime = NULL, zero_inflated = FALSE, ...)
 }
@@ -33,7 +33,9 @@ A matrix where each column corresponds to a gene, the first row is
 the p-value for that gene and subsequent rows are model parameters.
 }
 \description{
-Switch-like differential expression test
+Fit sigmoidal differential expression models to gene expression across pseudotime.
+Parameter estimates are returned along with a p-value for switch-like differential
+expression over a null model (constant expression).
 }
 \examples{
 data(example_gex)

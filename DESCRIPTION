@@ -10,7 +10,7 @@ LazyData: TRUE
 biocViews: Software, Transcriptomics, GeneExpression, RNASeq, Regression, DifferentialExpression
 Depends: R (>= 2.10.0)
 Imports:
-    scater,
+    Biobase,
     dplyr,
     ggplot2
 Suggests:

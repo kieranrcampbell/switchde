@@ -3,57 +3,12 @@
 # 
 # kieran.campbell@sjc.ox.ac.uk
 
-#' Fit sigmoidal pseudotime model for set of genes
-#' 
-#' Main function call for \code{switchde}.
-#' 
-#' @param object Gene expression data that is either
-#' \itemize{
-#' \item A vector of length number of cells for a single gene
-#' \item A matrix of dimension number of genes x number of cells
-#' \item An object of class \code{SCESet} from package scater
-#' }
-#'  
-#' @param pseudotime A pseudotime vector with a pseudotime corresponding to 
-#' every cell. Can be \code{NULL} if object is of class \code{SCESet} and 
-#' \code{pData(sce)$pseudotime} is defined.
-#'  
-#' @param zero_inflated Logical. Should zero inflation be implemented? Default  \code{FALSE}
-#'  
-#' @param ... Additional arguments to be passed to expectation maximisation algorithm
-#' if zero-inflation is enabled:
-#' \itemize{
-#' \item maxit Maximum number of iterations for EM. Default 500
-#' \item loglik_tol Change in log-likelihood tolerance. Default 1e-7 
-#' \item verbose Should progress of EM optimisation be printed? Default \code{FALSE}
-#' }
-#'  
-#' @export
-#' 
-#' @import dplyr
-#' 
-#' @return A matrix where columns are genes and rows are model parameters (zero inflation will
-#' have an extra lambda parameter compared to no zero-inflation)
-fitModel <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
-  res <- NULL
-  inputs <- sanitise_inputs(object, pseudotime)
-  X <- inputs$X
-  pst <- inputs$pst
-  
-  if(zero_inflated) {
-    res <- apply(X, 1, function(x, pst, ...) {
-      alt_EM_ctrl(x, pst, ...)$par
-      }, pst, ...)
-  } else {
-    res <- apply(X, 1, function(x, pst) {
-      norm_fit_alt_model(x, pst)$par
-      }, pst)
-  }
-  
-  return( res )
-}
 
-#' Switch-like differential expression test
+#' Switch-like model fitting and differential expression test
+#' 
+#' Fit sigmoidal differential expression models to gene expression across pseudotime.
+#' Parameter estimates are returned along with a p-value for switch-like differential
+#' expression over a null model (constant expression).
 #'  
 #' @param object Gene expression data that is either
 #' \itemize{
@@ -160,23 +115,14 @@ switchplot <- function(x, pseudotime, pars) {
     stat_function(fun = sigmoid, args = list(params = pars), color = 'red')
 }
 
-#' Backwards compatibility.
-#' 
-#' This function as been replaced by \code{switchde}.
-#' 
-#' @param ... Arguments passed to \code{switchde}.
-#' 
-#' @export
-testDE <- function(...) {
-  switchde(...)
-}
+
 
 #' Sanitise inputs for testDE and fitModel
 #' @param object The object passed at the entry point (either a SCESet or gene
 #' expression matrix)
 #' @param pseudotime A pseudotime vector
 #' 
-#' @importFrom scater exprs
+#' @importFrom Biobase exprs
 #' 
 #' @return A list with two entries: a gene expression matrix \code{X}
 #' and a pseudotime vector \code{pst}.
