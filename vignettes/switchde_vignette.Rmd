@@ -16,13 +16,17 @@ references:
   type: article-journal
   issued:
     year: 2014
+vignette: >
+  %\VignetteIndexEntry{An overview of the switchde package}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
 ---
 
 ```{r load-data, cache = FALSE, message = FALSE, warning = FALSE, include = FALSE}
 library(dplyr)
 library(monocle)
+library(switchde)
 knitr::opts_chunk$set( cache = TRUE )
-devtools::load_all("~/oxford/switch/switchde/") ## REMOVE WHEN COMPLETED
 ```
 
   

@@ -42,7 +42,7 @@ test_that("Model fitting is approximately correct", {
   ## check parameter estimates aren't wildly off
   expect_lt(abs(sde$mu0 - mu0), 0.1)
   expect_lt(abs(sde$k - k), 1) # more tolerance for k due to geometry
-  expect_lt(abs(sde$t0 - t0), 0.1)
+  expect_lt(abs(sde$t0 - t0), 0.5)
 })
 
 test_that("Output is correct on matrix input", {
