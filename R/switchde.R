@@ -30,6 +30,8 @@
 #'  
 #' @export
 #' 
+#' @import dplyr
+#' 
 #' @return A matrix where each column corresponds to a gene, the first row is
 #' the p-value for that gene and subsequent rows are model parameters.
 #' 
@@ -50,16 +52,21 @@ switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
     res <- apply(X, 1, norm_diff_expr_test, pst)
   }
   
-  res <- tbl_df(t(res))
+  res <- dplyr::as_data_frame(t(res))
   
   if(!is.null(rownames(X))) {
-    res <- mutate(res, gene = rownames(X))
+    res <- dplyr::mutate(res, gene = rownames(X))
   } else {
-    res <- mutate(res, gene = paste0("gene", 1:nrow(res)))
+    res <- dplyr::mutate(res, gene = paste0("gene", 1:nrow(res)))
   }
   
-  res <- mutate(res, qval = p.adjust(pval, method = "BH"))
-  res <- select(res, gene, pval, qval, mu0, k, t0)
+  res <- dplyr::mutate(res, qval = p.adjust(pval, method = "BH"))
+  
+  if(zero_inflated) {
+    res <- dplyr::select(res, gene, pval, qval, mu0, k, t0, lambda)
+  } else {
+    res <- dplyr::select(res, gene, pval, qval, mu0, k, t0)
+  }
   
   return( res )
 }
@@ -130,7 +137,7 @@ sanitise_inputs <- function(object, pseudotime) {
   X <- pst <- NULL
   
   if(is.vector(object) && is.numeric(object)) { # single gene expression vector
-    message(paste("Assuming single gene measured in", length(object)), "cells")
+    message(paste("Assuming single gene measured in", length(object)), " cells")
     X <- matrix(object, nrow = 1)
   } else if(is.matrix(object)) { # multiple gene expression matrix
     message(paste("Input gene-by-cell matrix:", nrow(object), "genes and ", ncol(object), "cells"))

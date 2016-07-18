@@ -12,7 +12,7 @@
 #' @return The estimate of the Q function.
 norm_zi_Q <- function(params, x, t, is_zero) {
   par <- params[1:4] ; lambda <- params[5]
-  lQ <- alt_obj_func(params, x, t)
+  lQ <- norm_alt_obj_func(params, x, t)
   lQ <- lQ + sum(lambda * x[is_zero]^2)
   lQ <- lQ - sum(log(1 - exp(-lambda * x[!is_zero]^2)))
   lQ
@@ -235,6 +235,7 @@ norm_zi_diff_expr_test <- function(x, t, ...) {
   params <- models$alt_model$par
   if(length(params) < 5) params <- rep(NA, 5)
   
+  params[2] <- params[2] / 2 # convert to mu0
   r <- c(pval, params)
   names(r) <- c('pval', 'L', 'k', 't0', 'sig_sq', 'lambda')
   return( r )
