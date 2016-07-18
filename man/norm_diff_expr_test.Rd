@@ -4,12 +4,14 @@
 \alias{norm_diff_expr_test}
 \title{Sigmoidal differential expression test}
 \usage{
-norm_diff_expr_test(x, t)
+norm_diff_expr_test(x, t, ...)
 }
 \arguments{
 \item{x}{Gene expression vector}
 
 \item{t}{Pseudotime vector}
+
+\item{...}{Additional arguments passed to \code{norm_fit_models}}
 }
 \value{
 A vector of length 5 with entries:

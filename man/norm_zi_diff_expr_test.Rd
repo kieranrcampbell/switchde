@@ -10,6 +10,9 @@ norm_zi_diff_expr_test(x, t, ...)
 \item{x}{Gene expression vector}
 
 \item{t}{Pseudotime vector}
+
+\item{...}{Additional arguments passed to \code{norm_zi_fit_models} to control
+EM algorithm}
 }
 \value{
 A vector of length 5 with entries:

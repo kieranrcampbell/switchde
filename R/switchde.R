@@ -5,26 +5,28 @@
 
 #' Fit sigmoidal pseudotime model for set of genes
 #' 
-#'  @param object Gene expression data that is either
-#'  \itemize{
-#'  \item A vector of length number of cells for a single gene
-#'  \item A matrix of dimension number of genes x number of cells
-#'  \item An object of class \code{SCESet} from package scater
-#'  }
+#' Main function call for \code{switchde}.
+#' 
+#' @param object Gene expression data that is either
+#' \itemize{
+#' \item A vector of length number of cells for a single gene
+#' \item A matrix of dimension number of genes x number of cells
+#' \item An object of class \code{SCESet} from package scater
+#' }
 #'  
-#'  @param pseudotime A pseudotime vector with a pseudotime corresponding to 
-#'  every cell. Can be \code{NULL} if object is of class \code{SCESet} and 
-#'  \code{pData(sce)$pseudotime} is defined.
+#' @param pseudotime A pseudotime vector with a pseudotime corresponding to 
+#' every cell. Can be \code{NULL} if object is of class \code{SCESet} and 
+#' \code{pData(sce)$pseudotime} is defined.
 #'  
-#'  @param zero_inflated Logical. Should zero inflation be implemented? Default  \code{FALSE}
+#' @param zero_inflated Logical. Should zero inflation be implemented? Default  \code{FALSE}
 #'  
-#'  @param ... Additional arguments to be passed to expectation maximisation algorithm
-#'  if zero-inflation is enabled:
-#'  \itemize{
-#'  \item maxit Maximum number of iterations for EM. Default 500
-#'  \item loglik_tol Change in log-likelihood tolerance. Default 1e-7 
-#'  \item verbose Should progress of EM optimisation be printed? Default \code{FALSE}
-#'  }
+#' @param ... Additional arguments to be passed to expectation maximisation algorithm
+#' if zero-inflation is enabled:
+#' \itemize{
+#' \item maxit Maximum number of iterations for EM. Default 500
+#' \item loglik_tol Change in log-likelihood tolerance. Default 1e-7 
+#' \item verbose Should progress of EM optimisation be printed? Default \code{FALSE}
+#' }
 #'  
 #' @export
 #' 
@@ -174,6 +176,8 @@ testDE <- function(...) {
 #' expression matrix)
 #' @param pseudotime A pseudotime vector
 #' 
+#' @importFrom scater exprs
+#' 
 #' @return A list with two entries: a gene expression matrix \code{X}
 #' and a pseudotime vector \code{pst}.
 sanitise_inputs <- function(object, pseudotime) {
@@ -183,19 +187,16 @@ sanitise_inputs <- function(object, pseudotime) {
     message(paste("Assuming single gene measured in", length(object)), "cells")
     X <- matrix(object, nrow = 1)
   } else if(is.matrix(object)) { # multiple gene expression matrix
-    message(paste("Assuming gene-by-cell matrix:", nrow(object), "genes and ", ncol(object), "cells"))
+    message(paste("Input gene-by-cell matrix:", nrow(object), "genes and ", ncol(object), "cells"))
     X <- object
+  } else if(is(object, "SCESet")) {
+    if(is.null(pseudotime)) {
+      pst <- pData(object)$pseudotime
+    }
+    if(is.null(pseudotime)) stop("Pseudotime must either be specified or as a column named pseudotime in the phenoData of the SCESet")
+    X <- exprs(object)
   } else {
-    if(require(scater)) {
-      if(is(object, "SCESet")) {
-        if(is.null(pseudotime)) pst <- pData(object)$pseudotime
-        X <- exprs(object)
-      } else {
-        stop("object must be vector, matrix or SCESet")  
-      }
-    } else {
       stop("object must be vector, matrix or SCESet")
-    }   
   }
   
   if(is.null(pst) && !is.null(pseudotime)) pst <- pseudotime

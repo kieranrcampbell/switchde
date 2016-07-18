@@ -2,13 +2,23 @@
 % Please edit documentation in R/common.R
 \name{norm_alt_obj_func}
 \alias{norm_alt_obj_func}
-\title{Negative log likelihood of the sigmoidal differential expression
-function given some expression vector x}
+\title{Model log likelihood}
 \usage{
 norm_alt_obj_func(params, x, t)
 }
+\arguments{
+\item{params}{The model parameters}
+
+\item{x}{Gene expression vector}
+
+\item{t}{Pseudotime vector}
+}
+\value{
+The negative log-likelihood of the model given the parameters and data.
+}
 \description{
 Negative log likelihood of the sigmoidal differential expression
-function given some expression vector x
+function given some expression vector x, pseudotime vector t and 
+parameters params
 }
 

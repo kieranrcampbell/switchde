@@ -152,8 +152,8 @@ norm_lrtest <- function(x, t, models) {
 #' 
 #' @param x Gene expression vector
 #' @param t Pseudotime vector
+#' @param ... Additional arguments passed to \code{norm_fit_models}
 #' 
-#' @export
 #' @return A vector of length 5 with entries:
 #' \itemize{
 #' \item P-value
@@ -164,8 +164,8 @@ norm_lrtest <- function(x, t, models) {
 #' }
 #' 
 #' 
-norm_diff_expr_test <- function(x, t) {
-  models <- norm_fit_models(x, t)
+norm_diff_expr_test <- function(x, t, ...) {
+  models <- norm_fit_models(x, t, ...)
   pval <- norm_lrtest(x, t, models)
   params <- rep(NA, 4)
   

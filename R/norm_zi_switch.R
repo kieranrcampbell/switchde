@@ -2,6 +2,12 @@
 # differential expression for single-cell RNA-seq data
 # kieran.campbell@sjc.ox.ac.uk
 
+#' Return the Q function
+#' 
+#' @param params parameter vector
+#' @param x Gene expression vector
+#' @param t Pseudotime vector
+#' @param is_zero Logical vector indicating which elements of x were originally zero
 norm_zi_Q <- function(params, x, t, is_zero) {
   par <- params[1:4] ; lambda <- params[5]
   lQ <- alt_obj_func(params, x, t)
@@ -11,6 +17,11 @@ norm_zi_Q <- function(params, x, t, is_zero) {
 }
 
 #' Return the gradient of Q = E[l_c]
+#' 
+#' @param params parameter vector
+#' @param x Gene expression vector
+#' @param t Pseudotime vector
+#' @param is_zero Logical vector indicating which elements of x were originally zero
 norm_zi_Q_grad <- function(params, x, t, is_zero) {
   L <- params[1] ; k <- params[2] ; t_0 <- params[3]
   sig_sq <- params[4] ; lambda <- params[5]
@@ -201,6 +212,8 @@ norm_zi_fit_models <- function(x, t, ...) {
 #' 
 #' @param x Gene expression vector
 #' @param t Pseudotime vector
+#' @param ... Additional arguments passed to \code{norm_zi_fit_models} to control
+#' EM algorithm
 #' 
 #' @return A vector of length 5 with entries:
 #' \itemize{

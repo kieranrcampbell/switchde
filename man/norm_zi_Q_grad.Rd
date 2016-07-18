@@ -6,6 +6,15 @@
 \usage{
 norm_zi_Q_grad(params, x, t, is_zero)
 }
+\arguments{
+\item{params}{parameter vector}
+
+\item{x}{Gene expression vector}
+
+\item{t}{Pseudotime vector}
+
+\item{is_zero}{Logical vector indicating which elements of x were originally zero}
+}
 \description{
 Return the gradient of Q = E[l_c]
 }

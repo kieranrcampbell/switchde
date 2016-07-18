@@ -46,9 +46,17 @@ log_norm_likelihood <- function(x, mu, sig_sq) {
 }
 
 
-
+#' Model log likelihood
+#' 
 #' Negative log likelihood of the sigmoidal differential expression
-#' function given some expression vector x
+#' function given some expression vector x, pseudotime vector t and 
+#' parameters params
+#' 
+#' @param x Gene expression vector
+#' @param t Pseudotime vector
+#' @param params The model parameters
+#' 
+#' @return The negative log-likelihood of the model given the parameters and data.
 norm_alt_obj_func <- function(params, x, t) {
   sig_sq <- params[4]
   mu <- calc_mu(params, t)
