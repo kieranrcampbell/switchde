@@ -8,6 +8,8 @@
 #' @param x Gene expression vector
 #' @param t Pseudotime vector
 #' @param is_zero Logical vector indicating which elements of x were originally zero
+#' 
+#' @return The estimate of the Q function.
 norm_zi_Q <- function(params, x, t, is_zero) {
   par <- params[1:4] ; lambda <- params[5]
   lQ <- alt_obj_func(params, x, t)
@@ -22,6 +24,8 @@ norm_zi_Q <- function(params, x, t, is_zero) {
 #' @param x Gene expression vector
 #' @param t Pseudotime vector
 #' @param is_zero Logical vector indicating which elements of x were originally zero
+#' 
+#' @return The gradient of the Q function with respect to the parameters.
 norm_zi_Q_grad <- function(params, x, t, is_zero) {
   L <- params[1] ; k <- params[2] ; t_0 <- params[3]
   sig_sq <- params[4] ; lambda <- params[5]

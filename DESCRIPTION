@@ -8,7 +8,7 @@ Description: Inference and detection of switch-like differential expression acro
 License: GPL (>= 2)
 LazyData: TRUE
 biocViews: Software, Transcriptomics, GeneExpression, RNASeq, Regression, DifferentialExpression
-Depends: R (>= 2.10.0)
+Depends: R (>= 3.3)
 Imports:
     Biobase,
     dplyr,

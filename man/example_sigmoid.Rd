@@ -6,6 +6,9 @@
 \usage{
 example_sigmoid()
 }
+\value{
+An object of class \code{ggplot}
+}
 \description{
 Plot an example sigmoid function. For demonstration and documentation.
 }

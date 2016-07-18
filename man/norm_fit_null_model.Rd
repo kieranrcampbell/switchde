@@ -9,6 +9,14 @@ norm_fit_null_model(x)
 \arguments{
 \item{x}{Gene expression vector}
 }
+\value{
+A list of length three, with entries:
+\itemize{
+\item par MLE parameter estimates
+\item log_lik The MLE log-likelihood
+\item value The value returned by \code{optim} (equivalent to negative log-likelihood)
+}
+}
 \description{
 Fits the null model (simply by taking the mean and 
 variance of the expression vector x) and returns a list

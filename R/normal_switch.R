@@ -60,6 +60,13 @@ norm_Q_grad <- function(params, x, t) {
 #' @param x Gene expression vector
 #' @param t Pseudotime vector
 #' @param control Control arguments to be passed to \code{optim}
+#' 
+#' @return A list of length three, with entries:
+#' \itemize{
+#' \item par MLE parameter estimates
+#' \item log_lik The MLE log-likelihood
+#' \item value The value returned by \code{optim} (equivalent to negative log-likelihood)
+#' }
 norm_fit_alt_model <- function(x, t, control = list(maxit = 100000)) {
   L <- 2 * mean(x) ; t0 <- median(t) ; sig_sq <- var(x)
   k <- coef(lm(x ~ t))[2]
@@ -92,6 +99,13 @@ norm_fit_alt_model <- function(x, t, control = list(maxit = 100000)) {
 #' with the parameters as first entry and negative log likelihood
 #' as second.
 #' @param x Gene expression vector
+#' 
+#' @return A list of length three, with entries:
+#' \itemize{
+#' \item par MLE parameter estimates
+#' \item log_lik The MLE log-likelihood
+#' \item value The value returned by \code{optim} (equivalent to negative log-likelihood)
+#' }
 norm_fit_null_model <- function(x) {
   mu <- mean(x) ; sig2 <- var(x)
   neg_log_lik <- -log_norm_likelihood(x, mu, sig2)

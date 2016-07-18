@@ -161,6 +161,9 @@ sanitise_inputs <- function(object, pseudotime) {
 #' 
 #' @import ggplot2
 #' @export
+#' 
+#' @return An object of class \code{ggplot}
+#' 
 #' @examples
 #' example_sigmoid()
 example_sigmoid <- function() {
@@ -207,10 +210,12 @@ example_sigmoid <- function() {
 #' A matrix containing some synthetic gene expression data for 
 #' 100 cells and 4 genes
 #' 
+#' @return A 4 by 100 matrix
 "example_gex"
 
 #' Synthetic gene pseudotimes
 #' 
 #' A vector with example pseudotimes for the synthetic 
 #' gene expression data in \code{example_gex}
+#' @return A vector of length 100
 "example_pseudotime"

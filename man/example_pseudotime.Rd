@@ -8,6 +8,9 @@
 \usage{
 example_pseudotime
 }
+\value{
+A vector of length 100
+}
 \description{
 A vector with example pseudotimes for the synthetic 
 gene expression data in \code{example_gex}

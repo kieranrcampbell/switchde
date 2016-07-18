@@ -8,6 +8,9 @@
 \usage{
 example_gex
 }
+\value{
+A 4 by 100 matrix
+}
 \description{
 A matrix containing some synthetic gene expression data for 
 100 cells and 4 genes

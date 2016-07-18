@@ -13,6 +13,14 @@ norm_fit_alt_model(x, t, control = list(maxit = 1e+05))
 
 \item{control}{Control arguments to be passed to \code{optim}}
 }
+\value{
+A list of length three, with entries:
+\itemize{
+\item par MLE parameter estimates
+\item log_lik The MLE log-likelihood
+\item value The value returned by \code{optim} (equivalent to negative log-likelihood)
+}
+}
 \description{
 Fit the sigmoidal expression model for some expression vector 
 x, pseudotime t, and control parameters to be passed to optim
