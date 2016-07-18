@@ -11,10 +11,13 @@
 #'  \item A matrix of dimension number of genes x number of cells
 #'  \item An object of class \code{SCESet} from package scater
 #'  }
+#'  
 #'  @param pseudotime A pseudotime vector with a pseudotime corresponding to 
 #'  every cell. Can be \code{NULL} if object is of class \code{SCESet} and 
 #'  \code{pData(sce)$pseudotime} is defined.
+#'  
 #'  @param zero_inflated Logical. Should zero inflation be implemented? Default  \code{FALSE}
+#'  
 #'  @param ... Additional arguments to be passed to expectation maximisation algorithm
 #'  if zero-inflation is enabled:
 #'  \itemize{
@@ -167,6 +170,12 @@ testDE <- function(...) {
 }
 
 #' Sanitise inputs for testDE and fitModel
+#' @param object The object passed at the entry point (either a SCESet or gene
+#' expression matrix)
+#' @param pseudotime A pseudotime vector
+#' 
+#' @return A list with two entries: a gene expression matrix \code{X}
+#' and a pseudotime vector \code{pst}.
 sanitise_inputs <- function(object, pseudotime) {
   X <- pst <- NULL
   
@@ -245,3 +254,16 @@ example_sigmoid <- function() {
 
   return(plt)
 }
+
+#' Synthetic gene expression matrix
+#' 
+#' A matrix containing some synthetic gene expression data for 
+#' 100 cells and 4 genes
+#' 
+"example_gex"
+
+#' Synthetic gene pseudotimes
+#' 
+#' A vector with example pseudotimes for the synthetic 
+#' gene expression data in \code{example_gex}
+"example_pseudotime"

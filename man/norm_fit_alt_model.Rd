@@ -2,11 +2,16 @@
 % Please edit documentation in R/normal_switch.R
 \name{norm_fit_alt_model}
 \alias{norm_fit_alt_model}
-\title{Fit the sigmoidal expression model for some expression vector 
-x, pseudotime t, and control parameters to be passed to optim
-This function returns NA if optim fails to converge.}
+\title{Fit sigmoidal expression model}
 \usage{
 norm_fit_alt_model(x, t, control = list(maxit = 1e+05))
+}
+\arguments{
+\item{x}{Gene expression vector}
+
+\item{t}{Pseudotime vector}
+
+\item{control}{Control arguments to be passed to \code{optim}}
 }
 \description{
 Fit the sigmoidal expression model for some expression vector 

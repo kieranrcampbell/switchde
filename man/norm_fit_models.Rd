@@ -2,11 +2,21 @@
 % Please edit documentation in R/normal_switch.R
 \name{norm_fit_models}
 \alias{norm_fit_models}
-\title{Fits both sigmoidal and null models, returning them as a list}
+\title{Fit sigmoidal and null models}
 \usage{
-norm_fit_models(x, t)
+norm_fit_models(x, t, ...)
+}
+\arguments{
+\item{x}{Gene expression vector}
+
+\item{t}{Pseudotime vector}
+
+\item{...}{Additional arguments passed to \code{norm_fit_alt_model}}
+}
+\value{
+A list of models returned by \code{norm_fit_alt_model} and \code{norm_fit_null_model}
 }
 \description{
-Fits both sigmoidal and null models, returning them as a list
+Wrapper to fit both sigmoidal and null models, returning them as a list.
 }
 

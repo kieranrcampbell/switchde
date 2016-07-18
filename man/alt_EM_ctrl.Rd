@@ -11,6 +11,10 @@ alt_EM_ctrl(y, t, maxit = 500, loglik_tol = 1e-07, verbose = FALSE)
 
 \item{t}{Pseudotime vector}
 
+\item{maxit}{Maximum number of iterations for EM algorithm}
+
+\item{loglik_tol}{Threshold change in the log likelihood to assume the algorithm has converged.}
+
 \item{verbose}{Print out EM progress}
 }
 \value{

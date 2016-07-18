@@ -6,6 +6,16 @@
 \usage{
 sanitise_inputs(object, pseudotime)
 }
+\arguments{
+\item{object}{The object passed at the entry point (either a SCESet or gene
+expression matrix)}
+
+\item{pseudotime}{A pseudotime vector}
+}
+\value{
+A list with two entries: a gene expression matrix \code{X}
+and a pseudotime vector \code{pst}.
+}
 \description{
 Sanitise inputs for testDE and fitModel
 }

@@ -10,8 +10,17 @@
 # kieran.campbell@sjc.ox.ac.uk
 
 
+#' Compute the gradient of the log-likelihood
+#' 
 #' Computations the gradient of the log-likelihood of the model
 #' for params, expression vector x and pseudotime t
+#' 
+#' @param params A vector with three entries: (1) Parameter \eqn{L = 2 \mu_0}, (2) \eqn{k} 
+#' and (3) \code{t_0}
+#' @param x Gene expression vector
+#' @param t Pseudotime vector
+#' 
+#' @return The function gradient with respect to \eqn{(L, k, t_0)}.
 norm_Q_grad <- function(params, x, t) {
   L <- params[1] ; k <- params[2] ; t_0 <- params[3]
   sig_sq <- params[4]
@@ -42,12 +51,15 @@ norm_Q_grad <- function(params, x, t) {
 }
 
 
-
+#' Fit sigmoidal expression model
+#' 
 #' Fit the sigmoidal expression model for some expression vector 
 #' x, pseudotime t, and control parameters to be passed to optim
 #' This function returns NA if optim fails to converge.
 #' 
-#' @export
+#' @param x Gene expression vector
+#' @param t Pseudotime vector
+#' @param control Control arguments to be passed to \code{optim}
 norm_fit_alt_model <- function(x, t, control = list(maxit = 100000)) {
   L <- 2 * mean(x) ; t0 <- median(t) ; sig_sq <- var(x)
   k <- coef(lm(x ~ t))[2]
@@ -73,10 +85,13 @@ norm_fit_alt_model <- function(x, t, control = list(maxit = 100000)) {
   }
 }
 
+#' Fit null model
+#' 
 #' Fits the null model (simply by taking the mean and 
 #' variance of the expression vector x) and returns a list
 #' with the parameters as first entry and negative log likelihood
 #' as second.
+#' @param x Gene expression vector
 norm_fit_null_model <- function(x) {
   mu <- mean(x) ; sig2 <- var(x)
   neg_log_lik <- -log_norm_likelihood(x, mu, sig2)
@@ -85,13 +100,19 @@ norm_fit_null_model <- function(x) {
   return(list(par = par, log_lik = -neg_log_lik, value = neg_log_lik))
 }
 
-#' Fits both sigmoidal and null models, returning them as a list
-norm_fit_models <- function(x, t) {
-  alt_model <- norm_fit_alt_model(x, t)
+#' Fit sigmoidal and null models
+#' 
+#' Wrapper to fit both sigmoidal and null models, returning them as a list.
+#' 
+#' @param x Gene expression vector
+#' @param t Pseudotime vector
+#' @param ... Additional arguments passed to \code{norm_fit_alt_model}
+#' 
+#' @return A list of models returned by \code{norm_fit_alt_model} and \code{norm_fit_null_model}
+norm_fit_models <- function(x, t, ...) {
+  alt_model <- norm_fit_alt_model(x, t, ...)
   if(!is.list(alt_model)) {
     if(!is.na(alt_model)) { # this has to go on a separate line because of how comparisons are done
-      print(alt_model)
-      print(class(alt_model))
       stop("alt_model neither list nor NA")
     }
   }
@@ -107,12 +128,10 @@ norm_fit_models <- function(x, t) {
 #' to the sigmoidal model and the latter to the null model. The model should
 #' be of the form of those returned by norm_fit_alt_model and norm_fit_null_model
 #' 
-#' @export
 #' @return A P-value given by the likelihood ratio test
 norm_lrtest <- function(x, t, models) {
   ## first alternative model
   if(length(models$alt_model) < 2) {
-    print(models$alt_model)
     if(is.na(models$alt_model)) return(-1)
   }
   if(length(models$null_model) < 2) {
@@ -144,7 +163,7 @@ norm_lrtest <- function(x, t, models) {
 #' \item MLE estimate for sigma^2
 #' }
 #' 
-#' @export
+#' 
 norm_diff_expr_test <- function(x, t) {
   models <- norm_fit_models(x, t)
   pval <- norm_lrtest(x, t, models)
@@ -157,26 +176,5 @@ norm_diff_expr_test <- function(x, t) {
   return( r )
 }
 
-#' Plot a sigmoidal pseudotime model
-#' 
-#' @param alt_model The model returned by norm_fit_alt_model
-#' @param x Gene expression vector x
-#' @param t Pseudotime vector t
-#' 
-#' @export
-#' 
-#' @return A ggplot object plotting both gene expression and predicted
-#' gene expression (e.g. the mean) over pseudotime
-norm_plot_model <- function(alt_model, x, t) {
-  mu_func <- function(t, params) {
-    L <- params[1] ; k <- params[2] ; t_0 <- params[3] ; r <- params[4]
-    L / (1 + exp(-k*(t - t_0)))
-  }
-  df <- data.frame(y=x, t=t)
-  ggplot(df) + geom_point(aes(x=t, y=y), alpha=.8) +
-    theme_bw() +
-    stat_function(fun = mu_func, args = list(alt_model$par), color='red') +
-    xlab('Pseudotime') + ylab('Expression')
-}
 
 

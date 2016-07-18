@@ -17,10 +17,13 @@ have an extra lambda parameter compared to no zero-inflation)
  \item A matrix of dimension number of genes x number of cells
  \item An object of class \code{SCESet} from package scater
  }
+ 
  @param pseudotime A pseudotime vector with a pseudotime corresponding to 
  every cell. Can be \code{NULL} if object is of class \code{SCESet} and 
  \code{pData(sce)$pseudotime} is defined.
+ 
  @param zero_inflated Logical. Should zero inflation be implemented? Default  \code{FALSE}
+ 
  @param ... Additional arguments to be passed to expectation maximisation algorithm
  if zero-inflation is enabled:
  \itemize{

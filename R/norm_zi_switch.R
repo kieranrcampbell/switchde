@@ -68,9 +68,11 @@ alt_M_step <- function(params, x, t, is_zero, control = list(maxit = 1e6)) {
 #' 
 #' @param y Gene expression vector
 #' @param t Pseudotime vector
+#' @param maxit Maximum number of iterations for EM algorithm
+#' @param loglik_tol Threshold change in the log likelihood to assume the algorithm has converged.
 #' @param verbose Print out EM progress
 #' 
-#' @export
+#' 
 #' @return List with parameters, latent values and log likelihood
 alt_EM_ctrl <- function(y, t, maxit = 500, loglik_tol = 1e-7, verbose = FALSE) {
   ## initialisation
@@ -200,7 +202,6 @@ norm_zi_fit_models <- function(x, t, ...) {
 #' @param x Gene expression vector
 #' @param t Pseudotime vector
 #' 
-#' @export
 #' @return A vector of length 5 with entries:
 #' \itemize{
 #' \item P-value
@@ -209,6 +210,7 @@ norm_zi_fit_models <- function(x, t, ...) {
 #' \item MLE estimate for t_0
 #' \item MLE estimate for sigma^2
 #' }
+#' 
 norm_zi_diff_expr_test <- function(x, t, ...) {
   models <- norm_zi_fit_models(x, t, ...)
   pval <- norm_zi_lrtest(x, t, models)
@@ -229,7 +231,6 @@ norm_zi_diff_expr_test <- function(x, t, ...) {
 #' to the sigmoidal model and the latter to the null model. The model should
 #' be of the form of those returned by norm_fit_alt_model and norm_fit_null_model
 #' 
-#' @export
 #' @return A P-value given by the likelihood ratio test
 norm_zi_lrtest <- function(x, t, models) {
   ## first alternative model
@@ -246,22 +247,4 @@ norm_zi_lrtest <- function(x, t, models) {
   return( pchisq(D, dof, lower.tail = FALSE) )
 }
 
-# Plotting ----------------------------------------------------------------
-
-#' Plot zero inflated sigmoidal model
-#' 
-#' @param params Parameters returned by \code{EMCtrl}
-#' @param x Gene expression vector
-#' @param t Pseudotime vector
-norm_zi_plot_model <- function(params, x, t) {
-  mu_func <- function(t, params) {
-    L <- params[1] ; k <- params[2] ; t_0 <- params[3] ; r <- params[4]
-    L / (1 + exp(-k*(t - t_0)))
-  }
-  df <- data.frame(y=x, t=t)
-  ggplot(df) + geom_point(aes(x=t, y=y), alpha=.8) +
-    theme_bw() +
-    stat_function(fun = mu_func, args = list(params), color='red') +
-    xlab('Pseudotime') + ylab('Expression')
-}
 

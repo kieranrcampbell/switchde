@@ -2,12 +2,12 @@
 % Please edit documentation in R/normal_switch.R
 \name{norm_fit_null_model}
 \alias{norm_fit_null_model}
-\title{Fits the null model (simply by taking the mean and 
-variance of the expression vector x) and returns a list
-with the parameters as first entry and negative log likelihood
-as second.}
+\title{Fit null model}
 \usage{
 norm_fit_null_model(x)
+}
+\arguments{
+\item{x}{Gene expression vector}
 }
 \description{
 Fits the null model (simply by taking the mean and 
