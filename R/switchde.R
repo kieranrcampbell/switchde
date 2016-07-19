@@ -36,9 +36,9 @@
 #' the p-value for that gene and subsequent rows are model parameters.
 #' 
 #' @examples
-#' data(example_gex)
-#' data(example_pseudotime)
-#' sde <- switchde(example_gex, example_pseudotime)
+#' data(synth_gex)
+#' data(ex_pseudotime)
+#' sde <- switchde(synth_gex, ex_pseudotime)
 switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
   res <- NULL
   inputs <- sanitise_inputs(object, pseudotime)
@@ -83,10 +83,10 @@ switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
 #' 
 #' @export
 #' @examples
-#' data(example_gex)
-#' data(example_pseudotime)
-#' sde <- switchde(example_gex, example_pseudotime)
-#' pars <- extract_pars(sde, "gene1")
+#' data(synth_gex)
+#' data(ex_pseudotime)
+#' sde <- switchde(synth_gex, ex_pseudotime)
+#' pars <- extract_pars(sde, "Gene1")
 extract_pars <- function(sde, gene) {
   stopifnot(gene %in% sde$gene)
   g <- gene
@@ -112,10 +112,10 @@ extract_pars <- function(sde, gene) {
 #' @return A \code{ggplot2} plot of gene expression and MLE sigmoid
 #' 
 #' @examples
-#' data(example_gex)
-#' data(example_pseudotime)
-#' sde <- switchde(example_gex, example_pseudotime)
-#' switchplot(example_gex[1, ], example_pseudotime, extract_pars(sde, "gene1"))
+#' data(synth_gex)
+#' data(ex_pseudotime)
+#' sde <- switchde(synth_gex, ex_pseudotime)
+#' switchplot(synth_gex[1, ], ex_pseudotime, extract_pars(sde, "Gene1"))
 switchplot <- function(x, pseudotime, pars) {
   ggplot(data_frame(Expression = x, Pseudotime = pseudotime), aes(x = Pseudotime, y = Expression)) +
     geom_point(alpha = 0.5, fill = "grey", colour = "black", shape = 21) + theme_bw() +
@@ -215,14 +215,14 @@ example_sigmoid <- function() {
 #' Synthetic gene expression matrix
 #' 
 #' A matrix containing some synthetic gene expression data for 
-#' 100 cells and 4 genes
+#' 100 cells and 12 genes
 #' 
-#' @return A 4 by 100 matrix
-"example_gex"
+#' @return A 12 by 100 matrix
+"synth_gex"
 
 #' Synthetic gene pseudotimes
 #' 
 #' A vector with example pseudotimes for the synthetic 
 #' gene expression data in \code{example_gex}
 #' @return A vector of length 100
-"example_pseudotime"
+"ex_pseudotime"

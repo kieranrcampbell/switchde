@@ -18,9 +18,9 @@ A vector of length 3 corresonding to the parameters \eqn{\mu_0}, \eqn{k} and \eq
 Extract maximum likelihood parameter estimates from a call to \code{switchde}.
 }
 \examples{
-data(example_gex)
-data(example_pseudotime)
-sde <- switchde(example_gex, example_pseudotime)
-pars <- extract_pars(sde, "gene1")
+data(synth_gex)
+data(ex_pseudotime)
+sde <- switchde(synth_gex, ex_pseudotime)
+pars <- extract_pars(sde, "Gene1")
 }
 

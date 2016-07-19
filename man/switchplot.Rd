@@ -25,9 +25,9 @@ either be specified manually or can be extracted from the \code{data.frame} retu
 by \code{switchde} using the function \code{extract_pars}.
 }
 \examples{
-data(example_gex)
-data(example_pseudotime)
-sde <- switchde(example_gex, example_pseudotime)
-switchplot(example_gex[1, ], example_pseudotime, extract_pars(sde, "gene1"))
+data(synth_gex)
+data(ex_pseudotime)
+sde <- switchde(synth_gex, ex_pseudotime)
+switchplot(synth_gex[1, ], ex_pseudotime, extract_pars(sde, "Gene1"))
 }
 

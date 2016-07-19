@@ -5,17 +5,6 @@ author: "Kieran Campbell"
 date: "`r Sys.Date()`"
 output: 
   BiocStyle::html_document 
-references:
-- id: trapnell
-  title: The dynamics and regulators of cell fate decisions are revealed by pseudotemporal ordering of single cells.
-  author:
-  - family: Trapnell
-    given: Cole
-  container-title:  Nature biotechnology
-  publisher: Nature Publishing Group
-  type: article-journal
-  issued:
-    year: 2014
 vignette: >
   %\VignetteIndexEntry{An overview of the switchde package}
   %\VignetteEngine{knitr::rmarkdown}
@@ -24,8 +13,9 @@ vignette: >
 
 ```{r load-data, cache = FALSE, message = FALSE, warning = FALSE, include = FALSE}
 library(dplyr)
-library(monocle)
+library(tidyr)
 library(switchde)
+library(ggplot2)
 knitr::opts_chunk$set( cache = TRUE )
 ```
 
@@ -50,27 +40,26 @@ Governed by three parameters:
 
 # Example on real dataset
 
-We provide a brief example on the single-cell RNA-seq dataset of differentiating myoblasts from  [@trapnell]. This data is stored in `HSMM` in the Bioconductor package `HSMMSingleCell`. 
+We provide a brief example on some synthetic single-cell data bundled with the package. `synth_gex` contains a 12-by-100 expression matrix of 12 genes, and `ex_pseudotime` contains a pseudotime vector of length 100. We can start by plotting the expression:
 
+```{r plot-expression}
+data(synth_gex)
+data(ex_pseudotime)
 
+gex_cleaned <- as_data_frame(t(synth_gex)) %>% 
+  mutate(Pseudotime = ex_pseudotime) %>% 
+  gather(Gene, Expression, -Pseudotime)
 
-We first subset down to only genes expressed in at least 10% of cells, then from that set down to a further 5000 for computational convenience. We then transform the data to `log2(FPKM + 1)`.
-
-```{r subset-genes}
-set.seed(123L)
-library(HSMMSingleCell)
-data(HSMM)
-HSMM <- HSMM[rowMeans(exprs(HSMM) > 0) > 0.1, ] # gene expressed in 10% of cells
-HSMM <- HSMM[sample(seq_len(nrow(HSMM)), 1000), ] # sample down to 5000 for computational convenience
-
-x <- log2(exprs(HSMM) + 1)
-pseudotime <- HSMM$Pseudotime
+ggplot(gex_cleaned, aes(x = Pseudotime, y = Expression)) +
+  facet_wrap(~ Gene) + geom_point(shape = 21, fill = 'grey', color = 'black') +
+  theme_bw() + stat_smooth(color = 'darkred', se = FALSE)
 ```
+
 
 Model fitting and differential expression testing is provided by a call to the `switchde` function.
 
 ```{r test-de}
-sde <- switchde(x, pseudotime)
+sde <- switchde(synth_gex, ex_pseudotime)
 ```
 
 This returns a `data.frame` with 6 columns:
@@ -94,14 +83,14 @@ We may then wish to plot the expression of a particular gene and the MLE model. 
 * `pseudotime` Pseudotime vector of the same length as `x`
 * `pars` The (`mu_0`, `k`, `t0`) parameter tuple
 
-We can easily extract the parameters using the `extract_pars` function and pass this to `switchplot`:
+We can easily extract the parameters using the `extract_pars` function and pass this to `switchplot`, which plots the maximum likelihood sigmoidal mean:
 
 ```{r plot, fig.width = 5, fig.height = 3}
 gene <- sde$gene[which.min(sde$qval)]
 pars <- extract_pars(sde, gene)
 print(pars)
 
-switchplot(x[gene, ], HSMM$Pseudotime, pars)
+switchplot(synth_gex[gene, ], ex_pseudotime, pars)
 ```
 
 Note that `switchplot` returns a `ggplot` which can be further customised (e.g. using `theme_xxx()`, etc).
@@ -113,5 +102,4 @@ Note that `switchplot` returns a `ggplot` which can be further customised (e.g. 
 sessionInfo()
 ```
 
-# References
 

@@ -46,12 +46,12 @@ test_that("Model fitting is approximately correct", {
 })
 
 test_that("Output is correct on matrix input", {
-  data(example_gex)
-  data(example_pseudotime)
-  sde <- switchde(example_gex, example_pseudotime)
+  data(synth_gex)
+  data(ex_pseudotime)
+  sde <- switchde(synth_gex, ex_pseudotime)
 
   expect_is(sde, "tbl_df")
   expect_is(sde, "data.frame")
   expect_equal(ncol(sde), 6)
-  expect_equal(nrow(sde), 4)
+  expect_equal(nrow(sde), 12)
 })

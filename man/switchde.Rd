@@ -38,8 +38,8 @@ Parameter estimates are returned along with a p-value for switch-like differenti
 expression over a null model (constant expression).
 }
 \examples{
-data(example_gex)
-data(example_pseudotime)
-sde <- switchde(example_gex, example_pseudotime)
+data(synth_gex)
+data(ex_pseudotime)
+sde <- switchde(synth_gex, ex_pseudotime)
 }
 
