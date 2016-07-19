@@ -34,11 +34,6 @@ test_that("Model fitting is approximately correct", {
   expect_is(sde, "data.frame")
 
   expect_equal(ncol(sde), 6)
-  
-  ## Check 
-  ## p-val is less that 0.05
-  expect_lt(sde$pval, 0.05)
-  
 })
 
 test_that("Output is correct on matrix input", {
