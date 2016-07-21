@@ -4,7 +4,9 @@
 \alias{switchde}
 \title{Switch-like model fitting and differential expression test}
 \usage{
-switchde(object, pseudotime = NULL, zero_inflated = FALSE, ...)
+switchde(object, pseudotime = NULL, zero_inflated = FALSE,
+  lower_threshold = 0.01, maxiter = 1000, log_lik_tol = 0.001,
+  verbose = FALSE)
 }
 \arguments{
 \item{object}{Gene expression data that is either
@@ -20,13 +22,15 @@ every cell. Can be \code{NULL} if object is of class \code{SCESet} and
 
 \item{zero_inflated}{Logical. Should zero inflation be implemented? Default  \code{FALSE}}
 
-\item{...}{Additional arguments to be passed to expectation maximisation algorithm
-if zero-inflation is enabled:
-\itemize{
- \item maxit Maximum number of iterations for EM. Default 500
- \item loglik_tol Change in log-likelihood tolerance. Default 1e-7 
- \item verbose Should progress of EM optimisation be printed? Default \code{FALSE}
- }}
+\item{lower_threshold}{The minimum threshold below which to set expression to zero to avoid
+numerical issues. Default is 0.01}
+
+\item{maxiter}{Maximum number of iterations for EM algorithm if zero inflation enabled. Default 100}
+
+\item{log_lik_tol}{If the change in the log-likelihood falls below this for zero inflated EM
+the algorithm is assumed to have converged}
+
+\item{verbose}{Print convergence update for EM algorithm}
 }
 \value{
 A matrix where each column corresponds to a gene, the first row is

@@ -2,6 +2,8 @@
 
 export(example_sigmoid)
 export(extract_pars)
+export(fit_nzi_model)
+export(fit_zi_model)
 export(switchde)
 export(switchplot)
 import(dplyr)

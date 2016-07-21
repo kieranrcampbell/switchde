@@ -20,13 +20,12 @@
 #' every cell. Can be \code{NULL} if object is of class \code{SCESet} and 
 #' \code{pData(sce)$pseudotime} is defined.
 #' @param zero_inflated Logical. Should zero inflation be implemented? Default  \code{FALSE}
-#' @param ... Additional arguments to be passed to expectation maximisation algorithm
-#' if zero-inflation is enabled:
-#' \itemize{
-#'  \item maxit Maximum number of iterations for EM. Default 500
-#'  \item loglik_tol Change in log-likelihood tolerance. Default 1e-7 
-#'  \item verbose Should progress of EM optimisation be printed? Default \code{FALSE}
-#'  }
+#' @param lower_threshold The minimum threshold below which to set expression to zero to avoid
+#' numerical issues. Default is 0.01
+#' @param maxiter Maximum number of iterations for EM algorithm if zero inflation enabled. Default 100
+#' @param log_lik_tol If the change in the log-likelihood falls below this for zero inflated EM
+#' the algorithm is assumed to have converged
+#' @param verbose Print convergence update for EM algorithm
 #'  
 #' @export
 #' 
@@ -39,17 +38,20 @@
 #' data(synth_gex)
 #' data(ex_pseudotime)
 #' sde <- switchde(synth_gex, ex_pseudotime)
-switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE, ...) {
+switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE,
+                     lower_threshold = 0.01, maxiter = 1000, 
+                     log_lik_tol = 1e-3, verbose = FALSE) {
   res <- NULL
-  inputs <- sanitise_inputs(object, pseudotime)
+  inputs <- sanitise_inputs(object, pseudotime, lower_threshold, zero_inflated)
   X <- inputs$X
   pst <- inputs$pst
   
+  
   ## differential gene test time
   if(zero_inflated) {
-    res <- apply(X, 1, norm_zi_diff_expr_test, pst, ...)
+    res <- apply(X, 1, fit_zi_model, pst, maxiter, log_lik_tol, verbose)
   } else {
-    res <- apply(X, 1, norm_diff_expr_test, pst)
+    res <- apply(X, 1, fit_nzi_model, pst)
   }
   
   res <- dplyr::as_data_frame(t(res))
@@ -128,12 +130,15 @@ switchplot <- function(x, pseudotime, pars) {
 #' @param object The object passed at the entry point (either a SCESet or gene
 #' expression matrix)
 #' @param pseudotime A pseudotime vector
+#' @param zero_inflated Logical. Should zero inflation be implemented? Default  \code{FALSE}
+#' @param lower_threshold The minimum threshold below which to set expression to zero to avoid
+#' numerical issues. Default is 0.01
 #' 
 #' @importFrom Biobase exprs
 #' 
 #' @return A list with two entries: a gene expression matrix \code{X}
 #' and a pseudotime vector \code{pst}.
-sanitise_inputs <- function(object, pseudotime) {
+sanitise_inputs <- function(object, pseudotime, lower_threshold, zero_inflated) {
   X <- pst <- NULL
   
   if(is.vector(object) && is.numeric(object)) { # single gene expression vector
@@ -156,6 +161,19 @@ sanitise_inputs <- function(object, pseudotime) {
   if(is.null(X)) stop("Object must either be numeric vector, matrix or SCESet")
   if(is.null(pst)) stop("Pseudotime must either be specified or in pData(object)")
   if(length(pst) != ncol(X)) stop("Must have pseudotime for each cell")
+  
+  ## lower threshold
+  X[X < lower_threshold] <- 0
+  
+  ## check for zeros
+  if(zero_inflated) {
+    contains_zeros <- apply(X, 1, function(x) {
+      any(x == 0)
+    })
+    if(any(!contains_zeros)) {
+      stop(paste(sum(!contains_zeros), "features contain no zeros. Please filter these out or use non-zero-inflated mode."))
+    }
+  }
   
   return( list(X = X, pst = pst) )
 }
@@ -182,7 +200,7 @@ example_sigmoid <- function() {
   }
   
   g <- function(x, m, C) {
-    m * x + C
+    m * x + C2
   }
   
   k <- 20
@@ -211,6 +229,100 @@ example_sigmoid <- function() {
 
   return(plt)
 }
+
+#' Fit a zero-inflated model for a single gene
+#' 
+#' Fits a zero-inflated sigmoidal model for a single gene vector, returning
+#' MLE model parameters and p-value.
+#' 
+#' @param y Vector of gene expression values
+#' @param pst Pseudotime vector, of same length as y
+#' @param maxiter Maximum number of iterations for EM algorithm if zero inflation enabled. Default 100
+#' @param log_lik_tol If the change in the log-likelihood falls below this for zero inflated EM
+#' the algorithm is assumed to have converged
+#' @param verbose Print convergence update for EM algorithm
+#' 
+#' @export
+#' @return A vector with 6 entries: maximum likelihood estimates for \eqn{\mu_0}, \eqn{k}
+#' \eqn{t0}, \eqn{\lambda}, \eqn{\sigma^2} and a p-value
+#' 
+#' @examples
+#' data(synth_gex)
+#' data(ex_pseudotime)
+#' y <- synth_gex[1, ]
+#' fit <- fit_zi_model(y, ex_pseudotime)
+fit_zi_model <- function(y, pst, maxiter = 1000, log_lik_tol = 1e-3, verbose = FALSE) {
+  
+  stopifnot(length(y) == length(pst))
+  stopifnot(all(y >= 0))
+  
+  if(var(y) == 0) stop("Variance of input expression is zero - cannot fit temporal model.")
+  
+  if(!any(y == 0)) {
+    warning("No zeros found in data. Please use non-zero-inflated model. Returning NA")
+    r <- rep(NA, 7)
+    names(r) <- c("mu0", "k", "t0", "sigma2", "lambda", "pval")
+    return(r)
+  }
+  
+  sigmoidal_model <- EM_sigmoid(y, pst, iter = maxiter, 
+                                log_lik_tol = log_lik_tol, verbose = verbose)
+  constant_model <- EM_constant(y, maxiter, log_lik_tol, verbose)
+  
+  D <- -2 * (constant_model$log_lik - sigmoidal_model$log_lik)
+  dof <- 2 # 4 - 2
+  pval <- pchisq(D, dof, lower.tail = FALSE)
+  
+  r <- c(sigmoidal_model$params, pval)
+  names(r) <- c("mu0", "k", "t0", "sigma2", "lambda", "pval")
+  return(r)
+}
+
+#' Fit a (non-zero-inflated) model for a single gene
+#' 
+#' Fits a sigmoidal expression model for a single gene vector, returning
+#' MLE model parameters and p-value.
+#' 
+#' @param y Vector of gene expression values
+#' @param pst Pseudotime vector, of same length as y
+#' 
+#' @export
+#' @return A vector with 5 entries: maximum likelihood estimates for \eqn{\mu_0}, \eqn{k}
+#' \eqn{t0}, \eqn{\sigma^2} and a p-value
+#' 
+#' @examples
+#' data(synth_gex)
+#' data(ex_pseudotime)
+#' y <- synth_gex[1, ]
+#' fit <- fit_nzi_model(y, ex_pseudotime)
+fit_nzi_model <- function(y, pst) {
+  sigmoidal_model <- fit_sigmoidal_model(y, pst)
+  constant_model <- fit_constant_model(y)
+
+  D <- -2 * (constant_model$log_lik - sigmoidal_model$log_lik)
+  dof <- 2 # 4 - 2
+  pval <- pchisq(D, dof, lower.tail = FALSE)
+  
+  r <- c(sigmoidal_model$params, pval)
+  names(r) <- c("mu0", "k", "t0", "sigma2", "pval")
+  return(r)
+}
+
+#' Calculate the mean vector given parameters and pseudotimes (mu0 formulation)
+#' 
+#' This function (common to all models) calculates the sigmoidal mean vector
+#' given the parameters and factor of pseudotimes
+#' 
+#' @param params Vector of length 3 with entries mu_0, k, t0
+#' @param pst Vector of pseudotimes
+#' 
+#' @return Mean sigmoidal vector
+sigmoid <- function(pst, params) {
+  mu0 <- params[1] ; k <- params[2] ; t_0 <- params[3]
+  mu <- 2 * mu0 / (1 + exp(-k*(pst - t_0)))
+  return(mu)
+}
+
 
 #' Synthetic gene expression matrix
 #' 

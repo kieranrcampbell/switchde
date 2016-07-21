@@ -4,13 +4,18 @@
 \alias{sanitise_inputs}
 \title{Sanitise inputs for testDE and fitModel}
 \usage{
-sanitise_inputs(object, pseudotime)
+sanitise_inputs(object, pseudotime, lower_threshold, zero_inflated)
 }
 \arguments{
 \item{object}{The object passed at the entry point (either a SCESet or gene
 expression matrix)}
 
 \item{pseudotime}{A pseudotime vector}
+
+\item{lower_threshold}{The minimum threshold below which to set expression to zero to avoid
+numerical issues. Default is 0.01}
+
+\item{zero_inflated}{Logical. Should zero inflation be implemented? Default  \code{FALSE}}
 }
 \value{
 A list with two entries: a gene expression matrix \code{X}

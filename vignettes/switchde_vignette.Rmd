@@ -38,7 +38,7 @@ Governed by three parameters:
 
 
 
-# Example on real dataset
+# Example usage
 
 We provide a brief example on some synthetic single-cell data bundled with the package. `synth_gex` contains a 12-by-100 expression matrix of 12 genes, and `ex_pseudotime` contains a pseudotime vector of length 100. We can start by plotting the expression:
 
@@ -94,6 +94,33 @@ switchplot(synth_gex[gene, ], ex_pseudotime, pars)
 ```
 
 Note that `switchplot` returns a `ggplot` which can be further customised (e.g. using `theme_xxx()`, etc).
+
+# Zero-inflation
+
+We can also model zero inflation in the data with a dropout probability proportional to the latent gene expression magnitude. To enable this set `zero_inflation = TRUE`. While this model is more appropriate for single-cell RNA-seq data, it requires use of the EM algorithm so takes typically 20x longer.
+
+```{r zi}
+zde <- switchde(synth_gex, ex_pseudotime, zero_inflated = TRUE)
+```
+
+As before it returns a `data_frame`, this time with an additional parameter $\lambda$ corresponding to the dropout probability (see manuscript):
+
+```{r disp-zi}
+arrange(zde, qval)
+```
+
+We can plot the gene with the largest dropout effect and compare it to the non-zero-inflated model:
+
+```{r compare}
+gene <- zde$gene[which.min(zde$lambda)]
+pars <- extract_pars(sde, gene)
+zpars <- extract_pars(zde, gene)
+
+
+switchplot(synth_gex[gene, ], ex_pseudotime, pars)
+switchplot(synth_gex[gene, ], ex_pseudotime, zpars)
+```
+
 
 
 # Technical info
