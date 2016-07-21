@@ -200,7 +200,7 @@ example_sigmoid <- function() {
   }
   
   g <- function(x, m, C) {
-    m * x + C2
+    m * x + C
   }
   
   k <- 20
