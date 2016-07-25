@@ -12,6 +12,7 @@ vignette: >
 ---
 
 ```{r load-data, cache = FALSE, message = FALSE, warning = FALSE, include = FALSE}
+library(scater)
 library(dplyr)
 library(tidyr)
 library(switchde)

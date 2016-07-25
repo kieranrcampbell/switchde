@@ -1,8 +1,8 @@
 Package: switchde
 Type: Package
 Title: Switch-like differential expression across single-cell trajectories
-Version: 0.99.8
-Date: 2016-07-18
+Version: 0.99.9
+Date: 2016-07-25
 Authors@R: person("Kieran", "Campbell", email = "kieranrcampbell@gmail.com", role = c("aut", "cre"))
 Description: Inference and detection of switch-like differential expression across single-cell RNA-seq trajectories.
 License: GPL (>= 2)
@@ -21,7 +21,8 @@ Suggests:
     BiocStyle,
     testthat,
     numDeriv,
-    tidyr
+    tidyr,
+    scater
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
 URL: https://github.com/kieranrcampbell/switchde
