@@ -12,7 +12,9 @@ Depends: R (>= 3.3)
 Imports:
     Biobase,
     dplyr,
-    ggplot2
+    ggplot2,
+    methods,
+    stats
 Suggests:
     knitr,
     rmarkdown,

@@ -36,6 +36,22 @@ Governed by three parameters:
 * $k$ The 'activation strength'. If positive, the gene is upregulated along the trajectory; if negative, the gene is downregulated. The magnitude of $k$ corresponds to how fast the gene is up or down regulated.
 * $t_0$ The 'activation time', or where in the trajectory this behaviour occurs. Note this parameter should be interpreted with respect to the overall range of the pseudotimes supplied.
 
+# Installation
+
+`switchde` can be installed from both Bioconductor and Github.
+
+Example installation from Bioconductor:
+
+```{r install-bioc, eval = FALSE}
+source("https://bioconductor.org/biocLite.R")
+biocLite("switchde")
+```
+
+Example installation from Github:
+
+```{r install-github, eval = FALSE}
+devtools::install_github("kieranrcampbell/switchde")
+```
 
 
 # Example usage
@@ -56,10 +72,17 @@ ggplot(gex_cleaned, aes(x = Pseudotime, y = Expression)) +
 ```
 
 
-Model fitting and differential expression testing is provided by a call to the `switchde` function.
+Model fitting and differential expression testing is provided by a call to the `switchde` function:
 
 ```{r test-de}
 sde <- switchde(synth_gex, ex_pseudotime)
+```
+
+This can equivalently be called using an `SCESet` from the package `scater`:
+
+```{r de-from-scater}
+sce <- newSCESet(synth_gex)
+sde <- switchde(sce, ex_pseudotime)
 ```
 
 This returns a `data.frame` with 6 columns:

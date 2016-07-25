@@ -5,6 +5,17 @@ Inference of switch-like differential expression along single-cell trajectories
 
 ## Installation
 
+`switchde` is available on both Bioconductor and Github.
+
+### Installation from Bioconductor
+
+```r
+source("https://bioconductor.org/biocLite.R")
+biocLite("switchde")
+```
+
+### Installation from Github using Devtools
+
 ```r
 # install.packages("devtools") # if devtools not already installed
 devtools::install_github("kieranrcampbell/switchde")

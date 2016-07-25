@@ -9,6 +9,7 @@
 # - latent variable x
 # - parameters [mu0, k, t0, sigma2, lambda] - *always in this order *
 
+#' @importFrom stats coef median var lm optim
 EM_sigmoid <- function(y, pst, iter = 100, log_lik_tol = 1e-3,
                        verbose = FALSE) {
   ## Initialise

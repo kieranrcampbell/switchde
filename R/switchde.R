@@ -34,6 +34,8 @@
 #' @return A matrix where each column corresponds to a gene, the first row is
 #' the p-value for that gene and subsequent rows are model parameters.
 #' 
+#' @importFrom stats p.adjust
+#' 
 #' @examples
 #' data(synth_gex)
 #' data(ex_pseudotime)
@@ -54,20 +56,23 @@ switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE,
     res <- apply(X, 1, fit_nzi_model, pst)
   }
   
-  res <- dplyr::as_data_frame(t(res))
+  res <- as_data_frame(t(res))
   
   if(!is.null(rownames(X))) {
-    res <- dplyr::mutate(res, gene = rownames(X))
+    res <- mutate(res, gene = rownames(X))
   } else {
-    res <- dplyr::mutate(res, gene = paste0("gene", 1:nrow(res)))
+    res <- mutate(res, gene = paste0("gene", 1:nrow(res)))
   }
   
-  res <- dplyr::mutate(res, qval = p.adjust(pval, method = "BH"))
+  ## This just appeases R CMD CHECK
+  pval <- gene <- qval <- mu0 <- k <- t0 <- lambda <- NULL
+  
+  res <- mutate(res, qval = p.adjust(pval, method = "BH"))
   
   if(zero_inflated) {
-    res <- dplyr::select(res, gene, pval, qval, mu0, k, t0, lambda)
+    res <- select(res, gene, pval, qval, mu0, k, t0, lambda)
   } else {
-    res <- dplyr::select(res, gene, pval, qval, mu0, k, t0)
+    res <- select(res, gene, pval, qval, mu0, k, t0)
   }
   
   return( res )
@@ -81,7 +86,6 @@ switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE,
 #' @param gene The gene for which to extract parameters
 #' @return A vector of length 3 corresonding to the parameters \eqn{\mu_0}, \eqn{k} and \eqn{t_0}
 #' 
-#' @importFrom dplyr filter
 #' 
 #' @export
 #' @examples
@@ -119,7 +123,8 @@ extract_pars <- function(sde, gene) {
 #' sde <- switchde(synth_gex, ex_pseudotime)
 #' switchplot(synth_gex[1, ], ex_pseudotime, extract_pars(sde, "Gene1"))
 switchplot <- function(x, pseudotime, pars) {
-  ggplot(data_frame(Expression = x, Pseudotime = pseudotime), aes(x = Pseudotime, y = Expression)) +
+  ggplot(data_frame(Expression = x, Pseudotime = pseudotime), 
+         aes_string(x = "Pseudotime", y = "Expression")) +
     geom_point(alpha = 0.5, fill = "grey", colour = "black", shape = 21) + theme_bw() +
     stat_function(fun = sigmoid, args = list(params = pars), color = 'red')
 }
@@ -134,7 +139,8 @@ switchplot <- function(x, pseudotime, pars) {
 #' @param lower_threshold The minimum threshold below which to set expression to zero to avoid
 #' numerical issues. Default is 0.01
 #' 
-#' @importFrom Biobase exprs
+#' @importFrom Biobase exprs pData
+#' @importFrom methods is
 #' 
 #' @return A list with two entries: a gene expression matrix \code{X}
 #' and a pseudotime vector \code{pst}.
@@ -209,7 +215,7 @@ example_sigmoid <- function() {
   
   cols = c("#E41A1C", "#377EB8", "#4DAF4A")
   
-  plt <- ggplot(data.frame(x = c(0,1)), aes(x = x)) +
+  plt <- ggplot(data.frame(x = c(0,1)), aes_string(x = "x")) +
     theme_bw() + 
     xlab("Pseudotime")
   
@@ -245,6 +251,8 @@ example_sigmoid <- function() {
 #' @export
 #' @return A vector with 6 entries: maximum likelihood estimates for \eqn{\mu_0}, \eqn{k}
 #' \eqn{t0}, \eqn{\lambda}, \eqn{\sigma^2} and a p-value
+#' 
+#' @importFrom stats pchisq
 #' 
 #' @examples
 #' data(synth_gex)

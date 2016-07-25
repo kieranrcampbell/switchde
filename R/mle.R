@@ -2,6 +2,7 @@
 # Maximum likelihood estimates for non zero-inflated model
 # As before params = (mu0, k, t0, sigma2)
 
+#' @importFrom stats dnorm
 likelihood_sigmoidal <- function(params, y, pst) {
   mu <- sigmoid(pst, params[1:3])
   return(sum(dnorm(y, mu, sqrt(params[4]), log = TRUE)))
