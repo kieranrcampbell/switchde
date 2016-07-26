@@ -24,4 +24,5 @@ and a pseudotime vector \code{pst}.
 \description{
 Sanitise inputs for testDE and fitModel
 }
+\keyword{internal}
 

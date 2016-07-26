@@ -142,6 +142,8 @@ switchplot <- function(x, pseudotime, pars) {
 #' @importFrom Biobase exprs pData
 #' @importFrom methods is
 #' 
+#' @keywords internal
+#' 
 #' @return A list with two entries: a gene expression matrix \code{X}
 #' and a pseudotime vector \code{pst}.
 sanitise_inputs <- function(object, pseudotime, lower_threshold, zero_inflated) {
@@ -323,6 +325,8 @@ fit_nzi_model <- function(y, pst) {
 #' 
 #' @param params Vector of length 3 with entries mu_0, k, t0
 #' @param pst Vector of pseudotimes
+#' 
+#' @keywords internal
 #' 
 #' @return Mean sigmoidal vector
 sigmoid <- function(pst, params) {
