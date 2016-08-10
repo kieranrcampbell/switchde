@@ -1,0 +1,156 @@
+
+---
+title: "switchde: inference of switch-like gene behaviour along single-cell trajectories"
+author: "Kieran Campbell"
+date: "`r Sys.Date()`"
+output: 
+  BiocStyle::html_document 
+vignette: >
+  %\VignetteIndexEntry{An overview of the switchde package}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r load-data, cache = FALSE, message = FALSE, warning = FALSE, include = FALSE}
+library(scater)
+library(dplyr)
+library(tidyr)
+library(switchde)
+library(ggplot2)
+knitr::opts_chunk$set( cache = TRUE )
+```
+
+  
+# Introduction
+
+`switchde` is an `R` package for detecting switch-like differential expression along single-cell RNA-seq trajectories. It assumes genes follow a sigmoidal pattern of gene expression and tests for differential expression using a likelihood ratio test. It also returns maximum likelihood estimates (MLE) for the sigmoid parameters, which allows filtering of genes for up or down regulation as well as where along the trajectory the regulation occurs.
+
+The parametric form of gene expression assumed is a sigmoid:
+
+```{r sigmoid-plot, fig.width = 4, fig.height = 3, warning = FALSE}
+example_sigmoid()
+```
+
+Governed by three parameters:
+
+* $\mu_0$ The half-peak expression
+* $k$ The 'activation strength'. If positive, the gene is upregulated along the trajectory; if negative, the gene is downregulated. The magnitude of $k$ corresponds to how fast the gene is up or down regulated.
+* $t_0$ The 'activation time', or where in the trajectory this behaviour occurs. Note this parameter should be interpreted with respect to the overall range of the pseudotimes supplied.
+
+# Installation
+
+`switchde` can be installed from both Bioconductor and Github.
+
+Example installation from Bioconductor:
+
+```{r install-bioc, eval = FALSE}
+source("https://bioconductor.org/biocLite.R")
+biocLite("switchde")
+```
+
+Example installation from Github:
+
+```{r install-github, eval = FALSE}
+devtools::install_github("kieranrcampbell/switchde")
+```
+
+
+# Example usage
+
+We provide a brief example on some synthetic single-cell data bundled with the package. `synth_gex` contains a 12-by-100 expression matrix of 12 genes, and `ex_pseudotime` contains a pseudotime vector of length 100. We can start by plotting the expression:
+
+```{r plot-expression}
+data(synth_gex)
+data(ex_pseudotime)
+
+gex_cleaned <- as_data_frame(t(synth_gex)) %>% 
+  mutate(Pseudotime = ex_pseudotime) %>% 
+  gather(Gene, Expression, -Pseudotime)
+
+ggplot(gex_cleaned, aes(x = Pseudotime, y = Expression)) +
+  facet_wrap(~ Gene) + geom_point(shape = 21, fill = 'grey', color = 'black') +
+  theme_bw() + stat_smooth(color = 'darkred', se = FALSE)
+```
+
+
+Model fitting and differential expression testing is provided by a call to the `switchde` function:
+
+```{r test-de}
+sde <- switchde(synth_gex, ex_pseudotime)
+```
+
+This can equivalently be called using an `SCESet` from the package `scater`:
+
+```{r de-from-scater}
+sce <- newSCESet(synth_gex)
+sde <- switchde(sce, ex_pseudotime)
+```
+
+This returns a `data.frame` with 6 columns:
+
+* `gene` The gene name, taken from either `featureNames(sce)` or `rowNames(X)`
+* `pval` The p-value associated with differential expression
+* `qval` The Benjamini-Hochberg corrected q-value associated with differential expression
+* `mu0` The MLE estimate of $\mu_0$
+* `k` The MLE estimate of $k$
+* `t0` The MLE estimate of $t_0$
+
+We can use the function `arrange` from `dplyr` to order this by q-value:
+
+```{r view-results}
+arrange(sde, qval)
+```
+
+We may then wish to plot the expression of a particular gene and the MLE model. This is acheived using the `switchplot` function, which takes three arguments:
+
+* `x` Vector of expression values
+* `pseudotime` Pseudotime vector of the same length as `x`
+* `pars` The (`mu_0`, `k`, `t0`) parameter tuple
+
+We can easily extract the parameters using the `extract_pars` function and pass this to `switchplot`, which plots the maximum likelihood sigmoidal mean:
+
+```{r plot, fig.width = 5, fig.height = 3}
+gene <- sde$gene[which.min(sde$qval)]
+pars <- extract_pars(sde, gene)
+print(pars)
+
+switchplot(synth_gex[gene, ], ex_pseudotime, pars)
+```
+
+Note that `switchplot` returns a `ggplot` which can be further customised (e.g. using `theme_xxx()`, etc).
+
+# Zero-inflation
+
+We can also model zero inflation in the data with a dropout probability proportional to the latent gene expression magnitude. To enable this set `zero_inflation = TRUE`. While this model is more appropriate for single-cell RNA-seq data, it requires use of the EM algorithm so takes typically 20x longer.
+
+```{r zi}
+zde <- switchde(synth_gex, ex_pseudotime, zero_inflated = TRUE)
+```
+
+As before it returns a `data_frame`, this time with an additional parameter $\lambda$ corresponding to the dropout probability (see manuscript):
+
+```{r disp-zi}
+arrange(zde, qval)
+```
+
+We can plot the gene with the largest dropout effect and compare it to the non-zero-inflated model:
+
+```{r compare}
+gene <- zde$gene[which.min(zde$lambda)]
+pars <- extract_pars(sde, gene)
+zpars <- extract_pars(zde, gene)
+
+
+switchplot(synth_gex[gene, ], ex_pseudotime, pars)
+switchplot(synth_gex[gene, ], ex_pseudotime, zpars)
+```
+
+
+
+# Technical info
+
+```{r session-info}
+sessionInfo()
+```
+
+
