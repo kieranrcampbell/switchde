@@ -170,6 +170,12 @@ sanitise_inputs <- function(object, pseudotime, lower_threshold, zero_inflated) 
   if(is.null(pst)) stop("Pseudotime must either be specified or in pData(object)")
   if(length(pst) != ncol(X)) stop("Must have pseudotime for each cell")
   
+  gene_vars <- apply(X, 1, var)
+  
+  if(any(gene_vars == 0)) {
+    stop("Filter out any zero-variance genes before continuing")
+  }
+  
   ## lower threshold
   X[X < lower_threshold] <- 0
   

@@ -2,8 +2,8 @@ Package: switchde
 Type: Package
 Title: Switch-like differential expression across single-cell
         trajectories
-Version: 0.99.10
-Date: 2016-07-25
+Version: 0.99.11
+Date: 2016-10-7
 Authors@R: person("Kieran", "Campbell", email =
         "kieranrcampbell@gmail.com", role = c("aut", "cre"))
 Description: Inference and detection of switch-like differential
