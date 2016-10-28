@@ -277,7 +277,6 @@ fit_zi_model <- function(y, pst, maxiter = 10000, log_lik_tol = 1e-3, verbose = 
   tryCatch(sigmoidal_model <- EM_sigmoid(y, pst, iter = maxiter, 
                                         log_lik_tol = log_lik_tol, verbose = verbose),
            warning = function(w) {
-             cat("problem values: ", y)
              ok <<- FALSE
            })
   
