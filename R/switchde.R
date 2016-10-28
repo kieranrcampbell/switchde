@@ -179,16 +179,6 @@ sanitise_inputs <- function(object, pseudotime, lower_threshold, zero_inflated) 
   ## lower threshold
   X[X < lower_threshold] <- 0
   
-  ## check for zeros
-  if(zero_inflated) {
-    contains_zeros <- apply(X, 1, function(x) {
-      any(x == 0)
-    })
-    if(any(!contains_zeros)) {
-      stop(paste(sum(!contains_zeros), "features contain no zeros. Please filter these out or use non-zero-inflated mode."))
-    }
-  }
-  
   return( list(X = X, pst = pst) )
 }
 
@@ -267,29 +257,42 @@ example_sigmoid <- function() {
 #' data(ex_pseudotime)
 #' y <- synth_gex[1, ]
 #' fit <- fit_zi_model(y, ex_pseudotime)
-fit_zi_model <- function(y, pst, maxiter = 1000, log_lik_tol = 1e-3, verbose = FALSE) {
+fit_zi_model <- function(y, pst, maxiter = 10000, log_lik_tol = 1e-3, verbose = FALSE) {
   
   stopifnot(length(y) == length(pst))
   stopifnot(all(y >= 0))
   
   if(var(y) == 0) stop("Variance of input expression is zero - cannot fit temporal model.")
   
-  if(!any(y == 0)) {
-    warning("No zeros found in data. Please use non-zero-inflated model. Returning NA")
-    r <- rep(NA, 7)
+  if(!any(y == 0)) { # Return standard model
+    nzi_results <- fit_nzi_model(y, pst)
+    r <- rep(NA, 6)
     names(r) <- c("mu0", "k", "t0", "sigma2", "lambda", "pval")
+    r[c(1:4,6)] <- nzi_results
     return(r)
   }
   
-  sigmoidal_model <- EM_sigmoid(y, pst, iter = maxiter, 
-                                log_lik_tol = log_lik_tol, verbose = verbose)
-  constant_model <- EM_constant(y, maxiter, log_lik_tol, verbose)
+  sigmoidal_model <- NULL
+  ok <- TRUE
+  tryCatch(sigmoidal_model <- EM_sigmoid(y, pst, iter = maxiter, 
+                                        log_lik_tol = log_lik_tol, verbose = verbose),
+           warning = function(w) {
+             cat("problem values: ", y)
+             ok <<- FALSE
+           })
   
-  D <- -2 * (constant_model$log_lik - sigmoidal_model$log_lik)
-  dof <- 2 # 4 - 2
-  pval <- pchisq(D, dof, lower.tail = FALSE)
-  
-  r <- c(sigmoidal_model$params, pval)
+  r <- NULL
+  if(ok) {
+    constant_model <- EM_constant(y, maxiter, log_lik_tol, verbose)
+    
+    D <- -2 * (constant_model$log_lik - sigmoidal_model$log_lik)
+    dof <- 2 # 4 - 2
+    pval <- pchisq(D, dof, lower.tail = FALSE)
+    
+    r <- c(sigmoidal_model$params, pval)
+  } else {
+    r <- rep(NA, 6)
+  }
   names(r) <- c("mu0", "k", "t0", "sigma2", "lambda", "pval")
   return(r)
 }
