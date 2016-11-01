@@ -42,7 +42,7 @@
 #' sde <- switchde(synth_gex, ex_pseudotime)
 switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE,
                      lower_threshold = 0.01, maxiter = 1000, 
-                     log_lik_tol = 1e-3, verbose = FALSE) {
+                     log_lik_tol = 1e-2, verbose = FALSE) {
   res <- NULL
   inputs <- sanitise_inputs(object, pseudotime, lower_threshold, zero_inflated)
   X <- inputs$X
@@ -65,12 +65,16 @@ switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE,
   }
   
   ## This just appeases R CMD CHECK
-  pval <- gene <- qval <- mu0 <- k <- t0 <- lambda <- NULL
+  pval <- gene <- qval <- mu0 <- k <- t0 <- lambda <- EM_converged <- NULL
   
   res <- mutate(res, qval = p.adjust(pval, method = "BH"))
   
   if(zero_inflated) {
-    res <- select(res, gene, pval, qval, mu0, k, t0, lambda)
+    res <- select(res, gene, pval, qval, mu0, k, t0, lambda, EM_converged)
+    res$EM_converged <- as.logical(res$EM_converged)
+    if(any(!res$EM_converged)) {
+      warning("Some EM fits did not converge. Please inspect the `EM_converged` column")
+    }
   } else {
     res <- select(res, gene, pval, qval, mu0, k, t0)
   }
@@ -131,7 +135,7 @@ switchplot <- function(x, pseudotime, pars) {
 
 
 
-#' Sanitise inputs for testDE and fitModel
+#' Sanitise inputs 
 #' @param object The object passed at the entry point (either a SCESet or gene
 #' expression matrix)
 #' @param pseudotime A pseudotime vector
@@ -170,24 +174,21 @@ sanitise_inputs <- function(object, pseudotime, lower_threshold, zero_inflated) 
   if(is.null(pst)) stop("Pseudotime must either be specified or in pData(object)")
   if(length(pst) != ncol(X)) stop("Must have pseudotime for each cell")
   
-  gene_vars <- apply(X, 1, var)
-  
-  if(any(gene_vars == 0)) {
-    stop("Filter out any zero-variance genes before continuing")
-  }
-  
-  ## lower threshold
+  ## lower threshold - some calculations in EM suffer numerical issues for
+  ## very small y which are meaningless anyway
   X[X < lower_threshold] <- 0
   
-  ## check for zeros
-  if(zero_inflated) {
-    contains_zeros <- apply(X, 1, function(x) {
-      any(x == 0)
-    })
-    if(any(!contains_zeros)) {
-      stop(paste(sum(!contains_zeros), "features contain no zeros. Please filter these out or use non-zero-inflated mode."))
-    }
+  gene_vars <- apply(X, 1, var)
+  num_genes_zero_var <- sum(gene_vars == 0)
+  if(num_genes_zero_var > 0) {
+    msg <- paste("After setting measurements below lower_threshold =", lower_threshold)
+    msg <- paste(msg, "to zero,", num_genes_zero_var, "features had zero variance.")
+    msg <- paste(msg, "Please consider stricter filtering, such as mean expression above")
+    msg <- paste(msg, "lower_threshold and nonzero expression in 10% of cells")
+    stop(msg)
   }
+  
+
   
   return( list(X = X, pst = pst) )
 }
@@ -267,30 +268,39 @@ example_sigmoid <- function() {
 #' data(ex_pseudotime)
 #' y <- synth_gex[1, ]
 #' fit <- fit_zi_model(y, ex_pseudotime)
-fit_zi_model <- function(y, pst, maxiter = 1000, log_lik_tol = 1e-3, verbose = FALSE) {
+fit_zi_model <- function(y, pst, maxiter = 10000, log_lik_tol = 1e-3, verbose = FALSE) {
   
   stopifnot(length(y) == length(pst))
   stopifnot(all(y >= 0))
   
   if(var(y) == 0) stop("Variance of input expression is zero - cannot fit temporal model.")
   
-  if(!any(y == 0)) {
-    warning("No zeros found in data. Please use non-zero-inflated model. Returning NA")
+  if(!any(y == 0)) { # Return standard model
+    nzi_results <- fit_nzi_model(y, pst)
     r <- rep(NA, 7)
-    names(r) <- c("mu0", "k", "t0", "sigma2", "lambda", "pval")
+    names(r) <- c("mu0", "k", "t0", "sigma2", "lambda", "pval", "EM_converged")
+    r[c(1:4,6)] <- nzi_results
+    r[7] <- TRUE
     return(r)
   }
   
-  sigmoidal_model <- EM_sigmoid(y, pst, iter = maxiter, 
-                                log_lik_tol = log_lik_tol, verbose = verbose)
+ sigmoidal_model <- EM_sigmoid(y, pst, iter = maxiter, 
+                                        log_lik_tol = log_lik_tol, verbose = verbose)
+
+  
+  r <- NULL
+
   constant_model <- EM_constant(y, maxiter, log_lik_tol, verbose)
   
   D <- -2 * (constant_model$log_lik - sigmoidal_model$log_lik)
   dof <- 2 # 4 - 2
   pval <- pchisq(D, dof, lower.tail = FALSE)
-  
-  r <- c(sigmoidal_model$params, pval)
-  names(r) <- c("mu0", "k", "t0", "sigma2", "lambda", "pval")
+    
+  r <- c(sigmoidal_model$params, pval, 
+         (1 * sigmoidal_model$converged) * constant_model$converged)
+
+
+  names(r) <- c("mu0", "k", "t0", "sigma2", "lambda", "pval", "EM_converged")
   return(r)
 }
 

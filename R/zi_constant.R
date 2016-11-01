@@ -40,15 +40,13 @@ EM_constant <- function(y, iter = 100, log_lik_tol = 1e-3, verbose = FALSE) {
       # Converged
       if(verbose) message(paste("Expectation-maximisation converged in", it, "iterations"))
       
-      return(list(params = params, x = E$Ex, log_lik = opt$value))
+      return(list(params = params, x = E$Ex, log_lik = opt$value, converged = TRUE))
     }
     Q_val <- opt$value
   }
 
-  warning("EM algorithm failed to converge. Consider increasing maximum iterations.")
-  warning("Returning most recent parameter estimates anyway")
-  
-  return(list(params = opt$params, x = E$Ex, log_lik = opt$value))
+
+  return(list(params = params, x = E$Ex, log_lik = opt$value, converged = FALSE))
 }
 
 constant_E_step <- function(y, params) {

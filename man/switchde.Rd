@@ -5,7 +5,7 @@
 \title{Switch-like model fitting and differential expression test}
 \usage{
 switchde(object, pseudotime = NULL, zero_inflated = FALSE,
-  lower_threshold = 0.01, maxiter = 1000, log_lik_tol = 0.001,
+  lower_threshold = 0.01, maxiter = 1000, log_lik_tol = 0.01,
   verbose = FALSE)
 }
 \arguments{

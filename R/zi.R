@@ -25,6 +25,7 @@ EM_sigmoid <- function(y, pst, iter = 100, log_lik_tol = 1e-3,
   param_bounds <- c(0.1, -Inf, -Inf, 0.1, 0.01)
   
   Q_val <- -Inf
+  opt <- NULL
   
   ## EM algorithm
   for(it in seq_len(iter)) {
@@ -42,13 +43,13 @@ EM_sigmoid <- function(y, pst, iter = 100, log_lik_tol = 1e-3,
     if(abs(Q_val - opt$value) < log_lik_tol) {
       # Converged
       if(verbose) message(paste("Expectation-maximisation converged in", it, "iterations"))
-      return(list(params = params, x = E$Ex, log_lik = opt$value))
+      return(list(params = params, x = E$Ex, log_lik = opt$value, converged = TRUE))
     }
     Q_val <- opt$value
   }
-  warning("EM algorithm failed to converge. Consider increasing maximum iterations.")
-  warning("Returning most recent parameter estimates anyway")
-  return(list(params = opt$params, x = E$Ex, log_lik = opt$value))
+  # warning("EM algorithm failed to converge. Consider increasing maximum iterations.")
+  # warning("Returning most recent parameter estimates anyway")
+  return(list(params = params, x = E$Ex, log_lik = opt$value, converged = FALSE))
 }
 
 sigmoid_E_step <- function(y, pst, params) {
@@ -96,7 +97,10 @@ Q_sigmoid <- function(params, y, pst, Ex, Ex2) {
     logDiffExp(0, -lambda * y[!is_zero]^2)
   Q <- Q + sum(qtmp)
   
-  if(!is.finite(Q)) print(params)
+  if(!is.finite(Q)) {
+    print(params)
+    save(y, pst, Q, Ex, Ex2, params, file = "~/Desktop/y_pst.Rdata")
+  }
 
   return(Q)
 }

@@ -90,6 +90,6 @@ test_that("Output is correct on matrix input for EM algorithm", {
   
   expect_is(sde, "tbl_df")
   expect_is(sde, "data.frame")
-  expect_equal(ncol(sde), 7)
+  expect_equal(ncol(sde), 8)
   expect_equal(nrow(sde), 12)
 })

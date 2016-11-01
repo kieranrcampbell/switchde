@@ -29,6 +29,7 @@ The parametric form of gene expression assumed is a sigmoid:
 
 ```{r sigmoid-plot, fig.width = 4, fig.height = 3, warning = FALSE}
 example_sigmoid()
+
 ```
 
 Governed by three parameters:
@@ -54,6 +55,15 @@ Example installation from Github:
 devtools::install_github("kieranrcampbell/switchde")
 ```
 
+# Pre-filtering of genes
+
+Several inputs will cause issues in maximum likelihood and expecatation maximisation algorithms typically leading to error messages such as 'finite gradient required'. To avoid these, strict pre-filtering of genes is advised such as retaining genes with a certain mean expression and expressed in a certain proportion of cells. For example, if the matrix `X` represents logged expression data, we can retain only genes with mean expression greater than 1 and expressed in 20% of cells via
+
+```{r x-filter, eval = FALSE}
+X_filtered <- X[rowMeans(X) > 0.1 & rowMeans(X > 0) > 0.2,]
+```
+
+By default, `switchde` also sets any expression less than 0.01 to 0. This can be controlled via the `lower_threshold` parameter.
 
 # Example usage
 
@@ -72,6 +82,7 @@ ggplot(gex_cleaned, aes(x = Pseudotime, y = Expression)) +
   theme_bw() + stat_smooth(color = 'darkred', se = FALSE)
 ```
 
+## Non-zero inflated
 
 Model fitting and differential expression testing is provided by a call to the `switchde` function:
 
@@ -119,7 +130,7 @@ switchplot(synth_gex[gene, ], ex_pseudotime, pars)
 
 Note that `switchplot` returns a `ggplot` which can be further customised (e.g. using `theme_xxx()`, etc).
 
-# Zero-inflation
+## Zero-inflation
 
 We can also model zero inflation in the data with a dropout probability proportional to the latent gene expression magnitude. To enable this set `zero_inflation = TRUE`. While this model is more appropriate for single-cell RNA-seq data, it requires use of the EM algorithm so takes typically 20x longer.
 
@@ -145,7 +156,30 @@ switchplot(synth_gex[gene, ], ex_pseudotime, pars)
 switchplot(synth_gex[gene, ], ex_pseudotime, zpars)
 ```
 
+### Controlling the EM algorithm
 
+For zero-inflation the expectation-maximisation algorithm is used which will converge up to a user-supplied change in the log-likelihood after a given number of iterations. These are controlled by the parameters `maxiter` and `log_lik_tol` in the call to `switchde`. Most genes will converge after very few iterations, but some - particularly those with many zeros where a well defined 'step' can be fit - may take much longer. The default parameters are designed as a trade-off between accuracy and speed.
+
+If any genes do not converge using the default parameters, the user is warned and should expect the `EM_converged` column of the output. In this case, three options are available:
+
+1. Trust that after 1000 EM iterations, the parameter estimates will be good enough
+2. Refit the genes for which `EM_converged == FALSE` with either increasing `maxiter` or increased `log_lik_tol`
+3. Discard those genes altogether
+
+# Use cases
+
+Most pseudotime algorithms will infer something similar to principal component 1 or 2 of the data. Therefore, _by definition_, many genes will vary across pseudotime leading to a large proportion passing a strict FDR adjusted significance threshold. Genes designated as significant should therefore be treated with appropriate skepticism and ideally experimentally validated.
+
+We further suggest some use cases that might be of interest to researchers:
+
+1. Take all genes passing some FDR threshold and perform GO analysis (using packages such as [topGO](https://bioconductor.org/packages/release/bioc/html/topGO.html) or [goseq](http://bioconductor.org/packages/release/bioc/html/goseq.html)) to find out what a particular pseudotime or principal component in their data corresponds to
+2. Select genes with _interesting behaviour_. For example, genes could be identified that most exhibit switch or step-like behaviour along the trajectory, using `dplyr` calls such as `filter(sde, qval < 0.01, abs(k) > quantile(abs(k), 0.95))`
+3. Find which genes govern different parts of the pseudotime trajectory. This can be accomplished by filtering for significant genes in different time points. For example, to find genes regulated in the first quarter of the trajectory, one could call
+
+```{r first-quater, eval = FALSE}
+pst_quantiles <- quantile(pst, c(0, 0.25))
+filter(sde, qval < 0.01, t0 > pst_quantiles[1], t0 < pst_quantiles[2])
+```
 
 # Technical info
 
