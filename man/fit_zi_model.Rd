@@ -4,7 +4,8 @@
 \alias{fit_zi_model}
 \title{Fit a zero-inflated model for a single gene}
 \usage{
-fit_zi_model(y, pst, maxiter = 1000, log_lik_tol = 0.001, verbose = FALSE)
+fit_zi_model(y, pst, maxiter = 10000, log_lik_tol = 0.001,
+  verbose = FALSE)
 }
 \arguments{
 \item{y}{Vector of gene expression values}

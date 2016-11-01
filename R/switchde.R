@@ -65,7 +65,7 @@ switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE,
   }
   
   ## This just appeases R CMD CHECK
-  pval <- gene <- qval <- mu0 <- k <- t0 <- lambda <- NULL
+  pval <- gene <- qval <- mu0 <- k <- t0 <- lambda <- EM_converged <- NULL
   
   res <- mutate(res, qval = p.adjust(pval, method = "BH"))
   

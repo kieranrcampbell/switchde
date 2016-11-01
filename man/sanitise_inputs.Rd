@@ -2,7 +2,7 @@
 % Please edit documentation in R/switchde.R
 \name{sanitise_inputs}
 \alias{sanitise_inputs}
-\title{Sanitise inputs for testDE and fitModel}
+\title{Sanitise inputs}
 \usage{
 sanitise_inputs(object, pseudotime, lower_threshold, zero_inflated)
 }
@@ -22,7 +22,7 @@ A list with two entries: a gene expression matrix \code{X}
 and a pseudotime vector \code{pst}.
 }
 \description{
-Sanitise inputs for testDE and fitModel
+Sanitise inputs
 }
 \keyword{internal}
 
