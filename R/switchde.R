@@ -48,6 +48,26 @@ switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE,
   X <- inputs$X
   pst <- inputs$pst
   
+  feature_names <- NULL
+  if(!is.null(rownames(X))) {
+    feature_names <- rownames(X)
+  } else {
+    feature_names <- paste0("gene", 1:nrow(X))
+  }
+  
+  if(any(is.na(inputs$pst))) {
+    warning("NAs present in pseudotime vector. Returning NA for all parameters.")
+    na_vec <- rep(NA, nrow(X))
+    res <- dplyr::data_frame(gene = feature_names, 
+                             pval = na_vec, qval = na_vec, 
+                             mu0 = na_vec, k = na_vec, t0 = na_vec)
+    if(zero_inflated) {
+      res <- mutate(res, lambda = na_vec, EM_converged = na_vec)
+    }
+    
+    return(res)
+  }
+  
   
   ## differential gene test time
   if(zero_inflated) {
@@ -57,12 +77,8 @@ switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE,
   }
   
   res <- as_data_frame(t(res))
+  res <- mutate(res, gene = feature_names)
   
-  if(!is.null(rownames(X))) {
-    res <- mutate(res, gene = rownames(X))
-  } else {
-    res <- mutate(res, gene = paste0("gene", 1:nrow(res)))
-  }
   
   ## This just appeases R CMD CHECK
   pval <- gene <- qval <- mu0 <- k <- t0 <- lambda <- EM_converged <- NULL
