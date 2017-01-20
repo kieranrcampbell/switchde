@@ -41,7 +41,10 @@ fit_sigmoidal_model <- function(y, pst) {
     sigma2 <- var(y)
     
     params <- c(mu0, k, t0, sigma2)
-    param_bounds <- c(0.1, -Inf, -Inf, 0.1)
+    lower_bound_mu0 <- min(0.1, 0.1 * mean(y))
+    lower_bound_sigma2 <- min(0.1, 0.1 * var(y))
+    
+    param_bounds <- c(lower_bound_mu0, -Inf, -Inf, lower_bound_sigma2)
     
     opt <- optim(params, 
                  fn = likelihood_sigmoidal, gr = grad_likelihood_sigmoidal, 
