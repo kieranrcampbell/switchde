@@ -12,7 +12,7 @@ vignette: >
 ---
 
 ```{r load-data, cache = FALSE, message = FALSE, warning = FALSE, include = FALSE}
-library(scater)
+library(SingleCellExperiment)
 library(dplyr)
 library(tidyr)
 library(switchde)
@@ -74,8 +74,8 @@ data(synth_gex)
 data(ex_pseudotime)
 
 gex_cleaned <- as_data_frame(t(synth_gex)) %>% 
-  mutate(Pseudotime = ex_pseudotime) %>% 
-  gather(Gene, Expression, -Pseudotime)
+  dplyr::mutate(Pseudotime = ex_pseudotime) %>% 
+  tidyr::gather(Gene, Expression, -Pseudotime)
 
 ggplot(gex_cleaned, aes(x = Pseudotime, y = Expression)) +
   facet_wrap(~ Gene) + geom_point(shape = 21, fill = 'grey', color = 'black') +
@@ -90,10 +90,10 @@ Model fitting and differential expression testing is provided by a call to the `
 sde <- switchde(synth_gex, ex_pseudotime)
 ```
 
-This can equivalently be called using an `SCESet` from the package `scater`:
+This can equivalently be called using an `SingleCellExperiment` from the package `SingleCellExperiment`:
 
 ```{r de-from-scater}
-sce <- newSCESet(synth_gex)
+sce <- SingleCellExperiment(assays = list(exprs = synth_gex))
 sde <- switchde(sce, ex_pseudotime)
 ```
 
@@ -109,7 +109,7 @@ This returns a `data.frame` with 6 columns:
 We can use the function `arrange` from `dplyr` to order this by q-value:
 
 ```{r view-results}
-arrange(sde, qval)
+dplyr::arrange(sde, qval)
 ```
 
 We may then wish to plot the expression of a particular gene and the MLE model. This is acheived using the `switchplot` function, which takes three arguments:
@@ -141,7 +141,7 @@ zde <- switchde(synth_gex, ex_pseudotime, zero_inflated = TRUE)
 As before it returns a `data_frame`, this time with an additional parameter $\lambda$ corresponding to the dropout probability (see manuscript):
 
 ```{r disp-zi}
-arrange(zde, qval)
+dplyr::arrange(zde, qval)
 ```
 
 We can plot the gene with the largest dropout effect and compare it to the non-zero-inflated model:

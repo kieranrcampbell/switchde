@@ -12,11 +12,15 @@ License: GPL (>= 2)
 LazyData: TRUE
 biocViews: Software, Transcriptomics, GeneExpression, RNASeq,
         Regression, DifferentialExpression
-Depends: R (>= 3.3)
-Imports: Biobase, dplyr, ggplot2, methods, stats
+Depends: R (>= 3.4), SingleCellExperiment
+Imports: SummarizedExperiment, 
+          dplyr, 
+          ggplot2, 
+          methods, 
+          stats
 Suggests: knitr, rmarkdown, BiocStyle, testthat, numDeriv, tidyr,
         scater
 VignetteBuilder: knitr
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 URL: https://github.com/kieranrcampbell/switchde
 BugReports: https://github.com/kieranrcampbell/switchde

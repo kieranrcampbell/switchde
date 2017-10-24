@@ -4,7 +4,7 @@
 \alias{sanitise_inputs}
 \title{Sanitise inputs}
 \usage{
-sanitise_inputs(object, pseudotime, lower_threshold, zero_inflated)
+sanitise_inputs(object, pseudotime, lower_threshold, zero_inflated, sce_assay)
 }
 \arguments{
 \item{object}{The object passed at the entry point (either a SCESet or gene
@@ -16,6 +16,9 @@ expression matrix)}
 numerical issues. Default is 0.01}
 
 \item{zero_inflated}{Logical. Should zero inflation be implemented? Default  \code{FALSE}}
+
+\item{sce_assay}{The assay from the \code{SingleCellExperiment} to be used
+as expression, defaulting to "exprs"}
 }
 \value{
 A list with two entries: a gene expression matrix \code{X}
@@ -25,4 +28,3 @@ and a pseudotime vector \code{pst}.
 Sanitise inputs
 }
 \keyword{internal}
-

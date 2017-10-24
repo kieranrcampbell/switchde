@@ -33,4 +33,3 @@ data(ex_pseudotime)
 y <- synth_gex[1, ]
 fit <- fit_zi_model(y, ex_pseudotime)
 }
-

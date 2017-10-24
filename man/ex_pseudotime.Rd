@@ -16,4 +16,3 @@ A vector with example pseudotimes for the synthetic
 gene expression data in \code{example_gex}
 }
 \keyword{datasets}
-

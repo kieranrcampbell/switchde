@@ -19,4 +19,3 @@ This function (common to all models) calculates the sigmoidal mean vector
 given the parameters and factor of pseudotimes
 }
 \keyword{internal}
-

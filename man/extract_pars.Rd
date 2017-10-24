@@ -23,4 +23,3 @@ data(ex_pseudotime)
 sde <- switchde(synth_gex, ex_pseudotime)
 pars <- extract_pars(sde, "Gene1")
 }
-

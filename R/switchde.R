@@ -14,7 +14,7 @@
 #' \itemize{
 #'  \item A vector of length number of cells for a single gene
 #'  \item A matrix of dimension number of genes x number of cells
-#'  \item An object of class \code{SCESet} from package scater
+#'  \item An object of class \code{SingleCellExperiment} from package SingleCellExperiment
 #'  }
 #' @param pseudotime A pseudotime vector with a pseudotime corresponding to 
 #' every cell. Can be \code{NULL} if object is of class \code{SCESet} and 
@@ -26,6 +26,8 @@
 #' @param log_lik_tol If the change in the log-likelihood falls below this for zero inflated EM
 #' the algorithm is assumed to have converged
 #' @param verbose Print convergence update for EM algorithm
+#' @param sce_assay The assay from the \code{SingleCellExperiment} to be used
+#' as expression, defaulting to "exprs"
 #'  
 #' @export
 #' 
@@ -42,9 +44,10 @@
 #' sde <- switchde(synth_gex, ex_pseudotime)
 switchde <- function(object, pseudotime = NULL, zero_inflated = FALSE,
                      lower_threshold = 0.01, maxiter = 1000, 
-                     log_lik_tol = 1e-2, verbose = FALSE) {
+                     log_lik_tol = 1e-2, verbose = FALSE,
+                     sce_assay = "exprs") {
   res <- NULL
-  inputs <- sanitise_inputs(object, pseudotime, lower_threshold, zero_inflated)
+  inputs <- sanitise_inputs(object, pseudotime, lower_threshold, zero_inflated, sce_assay)
   X <- inputs$X
   pst <- inputs$pst
   
@@ -158,15 +161,18 @@ switchplot <- function(x, pseudotime, pars) {
 #' @param zero_inflated Logical. Should zero inflation be implemented? Default  \code{FALSE}
 #' @param lower_threshold The minimum threshold below which to set expression to zero to avoid
 #' numerical issues. Default is 0.01
+#' @param sce_assay The assay from the \code{SingleCellExperiment} to be used
+#' as expression, defaulting to "exprs"
 #' 
-#' @importFrom Biobase exprs pData
+#' @importFrom SummarizedExperiment assays
 #' @importFrom methods is
 #' 
 #' @keywords internal
 #' 
 #' @return A list with two entries: a gene expression matrix \code{X}
 #' and a pseudotime vector \code{pst}.
-sanitise_inputs <- function(object, pseudotime, lower_threshold, zero_inflated) {
+sanitise_inputs <- function(object, pseudotime, lower_threshold, zero_inflated,
+                            sce_assay) {
   X <- pst <- NULL
   
   if(is.vector(object) && is.numeric(object)) { # single gene expression vector
@@ -175,18 +181,18 @@ sanitise_inputs <- function(object, pseudotime, lower_threshold, zero_inflated) 
   } else if(is.matrix(object)) { # multiple gene expression matrix
     message(paste("Input gene-by-cell matrix:", nrow(object), "genes and ", ncol(object), "cells"))
     X <- object
-  } else if(is(object, "SCESet")) {
+  } else if(is(object, "SingleCellExperiment")) {
     if(is.null(pseudotime)) {
       pst <- pData(object)$pseudotime
     }
     if(is.null(pseudotime)) stop("Pseudotime must either be specified or as a column named pseudotime in the phenoData of the SCESet")
-    X <- exprs(object)
+    X <- assay(object, sce_assay)
   } else {
-    stop("object must be vector, matrix or SCESet")
+    stop("object must be vector, matrix or SingleCellExperiment")
   }
   
   if(is.null(pst) && !is.null(pseudotime)) pst <- pseudotime
-  if(is.null(X)) stop("Object must either be numeric vector, matrix or SCESet")
+  if(is.null(X)) stop("Object must either be numeric vector, matrix or SingleCellExperiment")
   if(is.null(pst)) stop("Pseudotime must either be specified or in pData(object)")
   if(length(pst) != ncol(X)) stop("Must have pseudotime for each cell")
   

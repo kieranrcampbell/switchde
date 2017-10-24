@@ -6,14 +6,14 @@
 \usage{
 switchde(object, pseudotime = NULL, zero_inflated = FALSE,
   lower_threshold = 0.01, maxiter = 1000, log_lik_tol = 0.01,
-  verbose = FALSE)
+  verbose = FALSE, sce_assay = "exprs")
 }
 \arguments{
 \item{object}{Gene expression data that is either
 \itemize{
  \item A vector of length number of cells for a single gene
  \item A matrix of dimension number of genes x number of cells
- \item An object of class \code{SCESet} from package scater
+ \item An object of class \code{SingleCellExperiment} from package SingleCellExperiment
  }}
 
 \item{pseudotime}{A pseudotime vector with a pseudotime corresponding to 
@@ -31,6 +31,9 @@ numerical issues. Default is 0.01}
 the algorithm is assumed to have converged}
 
 \item{verbose}{Print convergence update for EM algorithm}
+
+\item{sce_assay}{The assay from the \code{SingleCellExperiment} to be used
+as expression, defaulting to "exprs"}
 }
 \value{
 A matrix where each column corresponds to a gene, the first row is
@@ -46,4 +49,3 @@ data(synth_gex)
 data(ex_pseudotime)
 sde <- switchde(synth_gex, ex_pseudotime)
 }
-

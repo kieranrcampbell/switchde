@@ -30,4 +30,3 @@ data(ex_pseudotime)
 sde <- switchde(synth_gex, ex_pseudotime)
 switchplot(synth_gex[1, ], ex_pseudotime, extract_pars(sde, "Gene1"))
 }
-

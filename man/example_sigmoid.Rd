@@ -15,4 +15,3 @@ Plot an example sigmoid function. For demonstration and documentation.
 \examples{
 example_sigmoid()
 }
-

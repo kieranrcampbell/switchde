@@ -16,4 +16,3 @@ A matrix containing some synthetic gene expression data for
 100 cells and 12 genes
 }
 \keyword{datasets}
-
