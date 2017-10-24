@@ -2,7 +2,7 @@ Package: switchde
 Type: Package
 Title: Switch-like differential expression across single-cell
         trajectories
-Version: 1.3.1
+Version: 1.3.2
 Date: 2017-10-24
 Authors@R: person("Kieran", "Campbell", email =
         "kieranrcampbell@gmail.com", role = c("aut", "cre"))
