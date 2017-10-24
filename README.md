@@ -37,9 +37,9 @@ Governed by three parameters:
 
 ## Usage
 
-`switchde` accepts either an `SCESet` from [Scater](http://www.github.com/davismcc/scater) or a matrix of gene expression measurents. These should ideally be in `log(TPM + 1)` form, but any logged non-negative expression measurements will work.
+`switchde` accepts either an `SingleCellExperiment` from [SingleCellExperiment](https://github.com/drisso/SingleCellExperiment) or a matrix of gene expression measurents. These should ideally be in `log(TPM + 1)` form, but any logged non-negative expression measurements will work.
 
-We begin with an `SCESet` called `sce`, or equivalently a gene-by-cell expression matrix `X = exprs(sce)`. We also require a pseudotime vector `pseudotime`. Then call
+We begin with an `SingleCellExperiment` called `sce`, or equivalently a gene-by-cell expression matrix `X = assay(sce, "exprs")`. We also require a pseudotime vector `pseudotime`. Then call
 
 ```r
 sde <- switchde(sce, pseudotime)

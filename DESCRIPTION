@@ -18,8 +18,7 @@ Imports: SummarizedExperiment,
           ggplot2, 
           methods, 
           stats
-Suggests: knitr, rmarkdown, BiocStyle, testthat, numDeriv, tidyr,
-        scater
+Suggests: knitr, rmarkdown, BiocStyle, testthat, numDeriv, tidyr
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
 URL: https://github.com/kieranrcampbell/switchde
