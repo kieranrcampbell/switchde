@@ -182,7 +182,7 @@ sanitise_inputs <- function(object, pseudotime, lower_threshold, zero_inflated) 
     if(is.null(pseudotime)) stop("Pseudotime must either be specified or as a column named pseudotime in the phenoData of the SCESet")
     X <- exprs(object)
   } else {
-      stop("object must be vector, matrix or SCESet")
+    stop("object must be vector, matrix or SCESet")
   }
   
   if(is.null(pst) && !is.null(pseudotime)) pst <- pseudotime
@@ -204,7 +204,7 @@ sanitise_inputs <- function(object, pseudotime, lower_threshold, zero_inflated) 
     stop(msg)
   }
   
-
+  
   
   return( list(X = X, pst = pst) )
 }
@@ -257,7 +257,7 @@ example_sigmoid <- function() {
   
   plt <- plt + stat_function(fun = f, args = list(k = k, mu0 = mu0, t0 = t0), size = 1.5, alpha = 0.7) +
     ylim(-0.5,2.5) + ylab("Gene expression")
-
+  
   return(plt)
 }
 
@@ -300,22 +300,22 @@ fit_zi_model <- function(y, pst, maxiter = 10000, log_lik_tol = 1e-3, verbose = 
     return(r)
   }
   
- sigmoidal_model <- EM_sigmoid(y, pst, iter = maxiter, 
-                                        log_lik_tol = log_lik_tol, verbose = verbose)
-
+  sigmoidal_model <- EM_sigmoid(y, pst, iter = maxiter, 
+                                log_lik_tol = log_lik_tol, verbose = verbose)
+  
   
   r <- NULL
-
+  
   constant_model <- EM_constant(y, maxiter, log_lik_tol, verbose)
   
   D <- -2 * (constant_model$log_lik - sigmoidal_model$log_lik)
   dof <- 2 # 4 - 2
   pval <- pchisq(D, dof, lower.tail = FALSE)
-    
+  
   r <- c(sigmoidal_model$params, pval, 
          (1 * sigmoidal_model$converged) * constant_model$converged)
-
-
+  
+  
   names(r) <- c("mu0", "k", "t0", "sigma2", "lambda", "pval", "EM_converged")
   return(r)
 }
@@ -340,7 +340,7 @@ fit_zi_model <- function(y, pst, maxiter = 10000, log_lik_tol = 1e-3, verbose = 
 fit_nzi_model <- function(y, pst) {
   sigmoidal_model <- fit_sigmoidal_model(y, pst)
   constant_model <- fit_constant_model(y)
-
+  
   D <- -2 * (constant_model$log_lik - sigmoidal_model$log_lik)
   dof <- 2 # 4 - 2
   pval <- pchisq(D, dof, lower.tail = FALSE)
