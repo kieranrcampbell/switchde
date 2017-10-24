@@ -1,6 +1,8 @@
 
 # switchde
 
+[![Build Status](https://travis-ci.org/kieranrcampbell/switchde.svg?branch=master)](https://travis-ci.org/kieranrcampbell/switchde)
+
 Inference of switch-like differential expression along single-cell trajectories
 
 ## Installation
