@@ -1,7 +1,3 @@
-# Sigmoidal differential expression for single-cell
-# RNA-seq data across pseudotime.
-# 
-# kieran.campbell@sjc.ox.ac.uk
 
 
 #' Switch-like model fitting and differential expression test
@@ -164,7 +160,7 @@ switchplot <- function(x, pseudotime, pars) {
 #' @param sce_assay The assay from the \code{SingleCellExperiment} to be used
 #' as expression, defaulting to "exprs"
 #' 
-#' @importFrom SummarizedExperiment assays
+#' @importFrom SummarizedExperiment assay
 #' @importFrom methods is
 #' 
 #' @keywords internal
