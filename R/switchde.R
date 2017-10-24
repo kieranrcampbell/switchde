@@ -14,7 +14,7 @@
 #'  }
 #' @param pseudotime A pseudotime vector with a pseudotime corresponding to 
 #' every cell. Can be \code{NULL} if object is of class \code{SCESet} and 
-#' \code{pData(sce)$pseudotime} is defined.
+#' \code{colData(sce)$pseudotime} is defined.
 #' @param zero_inflated Logical. Should zero inflation be implemented? Default  \code{FALSE}
 #' @param lower_threshold The minimum threshold below which to set expression to zero to avoid
 #' numerical issues. Default is 0.01
@@ -160,7 +160,7 @@ switchplot <- function(x, pseudotime, pars) {
 #' @param sce_assay The assay from the \code{SingleCellExperiment} to be used
 #' as expression, defaulting to "exprs"
 #' 
-#' @importFrom SummarizedExperiment assay
+#' @importFrom SummarizedExperiment assay colData
 #' @importFrom methods is
 #' 
 #' @keywords internal
@@ -179,7 +179,7 @@ sanitise_inputs <- function(object, pseudotime, lower_threshold, zero_inflated,
     X <- object
   } else if(is(object, "SingleCellExperiment")) {
     if(is.null(pseudotime)) {
-      pst <- pData(object)$pseudotime
+      pst <- colData(object)$pseudotime
     }
     if(is.null(pseudotime)) stop("Pseudotime must either be specified or as a column named pseudotime in the phenoData of the SCESet")
     X <- assay(object, sce_assay)
@@ -189,7 +189,7 @@ sanitise_inputs <- function(object, pseudotime, lower_threshold, zero_inflated,
   
   if(is.null(pst) && !is.null(pseudotime)) pst <- pseudotime
   if(is.null(X)) stop("Object must either be numeric vector, matrix or SingleCellExperiment")
-  if(is.null(pst)) stop("Pseudotime must either be specified or in pData(object)")
+  if(is.null(pst)) stop("Pseudotime must either be specified or in colData(object)")
   if(length(pst) != ncol(X)) stop("Must have pseudotime for each cell")
   
   ## lower threshold - some calculations in EM suffer numerical issues for

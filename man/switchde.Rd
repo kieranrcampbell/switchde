@@ -18,7 +18,7 @@ switchde(object, pseudotime = NULL, zero_inflated = FALSE,
 
 \item{pseudotime}{A pseudotime vector with a pseudotime corresponding to 
 every cell. Can be \code{NULL} if object is of class \code{SCESet} and 
-\code{pData(sce)$pseudotime} is defined.}
+\code{colData(sce)$pseudotime} is defined.}
 
 \item{zero_inflated}{Logical. Should zero inflation be implemented? Default  \code{FALSE}}
 

@@ -11,7 +11,7 @@ Description: Inference and detection of switch-like differential
 License: GPL (>= 2)
 LazyData: TRUE
 biocViews: Software, Transcriptomics, GeneExpression, RNASeq,
-        Regression, DifferentialExpression
+        Regression, DifferentialExpression, SingleCell
 Depends: R (>= 3.4), SingleCellExperiment
 Imports: SummarizedExperiment, 
           dplyr, 
